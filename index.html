@@ -122,6 +122,16 @@ footer.app{max-width:1180px;margin:0 auto;padding:0 18px 30px;color:var(--ink2);
   body>#printRoot{display:block !important}
   #printRoot .sheet{page-break-after:always;overflow:hidden;position:relative;margin:0 auto}
 }
+/* ---------- sticky action bar (small screens) ---------- */
+#actionBar{display:none}
+@media (max-width:760px){
+  #actionBar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:60;background:#1a1a1d;padding:10px 12px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(0,0,0,.35)}
+  #actionBar .ab-btn{flex:1;min-height:52px;border:none;border-radius:10px;font-size:15.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  #actionBar .ab-gen{background:var(--accent);color:#fff}
+  #actionBar .ab-print{background:var(--accent2);color:#1a1a1d}
+  body{padding-bottom:86px}
+}
+@media print{#actionBar{display:none !important}}
 .sheet{background:#fff;color:#221d14;font-size:12.5px;line-height:1.5}
 .sheet .pg-inner{padding:0.55in 0.6in;height:100%;display:flex;flex-direction:column}
 .sheet h2.pg-title{font-size:22px;border-bottom:3px double #8a7c55;padding-bottom:6px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
@@ -224,7 +234,6 @@ pre#testResults{white-space:pre-wrap;background:#111;color:#b6ffb6;padding:14px;
   <div id="license-bar" class="license-bar" hidden>
     Licensed to <span id="license-name"></span> · <span id="license-code"></span> · You may sell the case files you create with this tool
   </div>
-
 <header class="site-header">
   <div class="header-inner">
     <div class="brand-mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M8 10.5h5M10.5 8v5"/></svg></div>
@@ -240,6 +249,7 @@ pre#testResults{white-space:pre-wrap;background:#111;color:#b6ffb6;padding:14px;
 <main id="panels"></main>
 
 <footer class="app">Whodunit Case-File Builder · A Songlap Deals studio tool · All stories, names and documents generated are original fiction. Finished packs may be sold under the commercial licence (see Book &amp; Export).</footer>
+<div id="actionBar"><button class="ab-btn ab-gen" id="abGen" type="button">⚙ Generate Case</button><button class="ab-btn ab-print" id="abPrint" type="button">🖨 Print / Save PDF</button></div>
 </div>
 <div id="toast" hidden></div>
 <div id="printRoot"></div>
@@ -745,7 +755,11 @@ function renderTabs(){$("#tabNav").innerHTML=TABS.map(([k,l])=>`<button class="t
  $$("#tabNav .tab-btn").forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;render()})}
 function render(){renderTabs();const P={build:renderBuild,suspects:renderSuspects,evidence:renderEvidence,witnesses:renderWitnesses,timeline:renderTimeline,design:renderDesign,export:renderExport,cases:renderCases};
  $("#panels").innerHTML=`<section class="panel" id="panel"></section>`;P[activeTab]($("#panel"));chipUpdate()}
-function needCase(el){el.innerHTML=`<h2>Nothing here yet</h2><p class="sub">Generate a case in the Build Case tab first — or open a ready-made case from the DFY Starter Vault in My Cases.</p>`;return true}
+function needCase(el){el.innerHTML=`<h2>Nothing here yet</h2><p class="sub">Generate a case in the Build Case tab first — or open a ready-made case from the DFY Starter Vault in My Cases.</p><div class="btn-row"><button class="btn btn-cta" id="ncBuild" type="button">⚙ Build a Case</button><button class="btn" id="ncCases" type="button">📂 My Cases &amp; Starter Vault</button></div>`;
+ const nb=$("#ncBuild",el),nc=$("#ncCases",el);
+ if(nb)nb.onclick=()=>{activeTab="build";render();window.scrollTo({top:0,behavior:"smooth"})};
+ if(nc)nc.onclick=()=>{activeTab="cases";render();window.scrollTo({top:0,behavior:"smooth"})};
+ return true}
 function field(label,val,attrs){return `<div><label class="f">${label}</label><input class="inp" value="${esc(val)}" ${attrs||""}></div>`}
 
 /* ---------------- Build Case ---------------- */
@@ -770,7 +784,7 @@ function renderBuild(el){
  $("#bFormat").onchange=e=>buildSel.format=e.target.value;
  $("#bTone").onchange=e=>buildSel.tone=e.target.value;
  $("#bTitle").oninput=e=>buildSel.title=e.target.value;
- $("#bGen").onclick=()=>{cur=generateCase({theme:buildSel.theme,difficulty:buildSel.difficulty,format:buildSel.format,tone:buildSel.tone,title:buildSel.title,seed:Date.now()%2000000000});autosave();toast("Case generated: "+cur.title);render()};
+ $("#bGen").onclick=()=>doGenerate();
  const sw=$("#bSwap");if(sw)sw.onclick=()=>{swapKiller(cur);autosave();toast("New killer: the whole file has been rebuilt around the new culprit.");render()}}
 
 /* ---------------- Suspects ---------------- */
@@ -966,13 +980,29 @@ function composeBook(c,kind){const host=kind!=="player";const S=[];const raw=[];
  const total=raw.length;
  raw.forEach((r,i)=>S.push(r.cover?`<div class="sheet cover-sheet">${r.html}</div>`:sheet(c,r.html,i+1,total)));
  return S}
-function printPack(kind){if(!cur)return;const root=$("#printRoot");
+function needCaseAction(){toast("No case yet — tap ⚙ Generate first, or open one in My Cases.");if(activeTab!=="build"){activeTab="build";render()}window.scrollTo({top:0,behavior:"smooth"})}
+function standaloneBookHTML(kind){
+ const mainStyle=document.querySelector("style")?document.querySelector("style").textContent:"";
+ const pageStyle=$("#pageStyle")?$("#pageStyle").textContent:"";
+ const links=Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(l=>`<link rel="stylesheet" href="${l.href}">`).join("");
+ return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(document.title)}</title>${links}<style>${mainStyle}</style><style>${pageStyle}</style><style>#printRoot{display:block}.savebar{position:sticky;top:0;z-index:9;background:#1a1a1d;color:#e8dcc4;padding:12px 14px;font-family:system-ui,sans-serif;font-size:14px;line-height:1.55}.savebar b{color:#fff}@media print{.savebar{display:none}}</style></head><body><div class="savebar">📄 <b>Your book is ready.</b> To save it as a PDF: tap the browser menu <b>⋮</b> → <b>Share</b> → <b>Print</b> → <b>Save as PDF</b>. Paper: ${settings.paper==="a4"?"A4":"Letter"} · Margins: None · Tick “Background graphics” for the colour edition.</div><div id="printRoot" class="${settings.inkSaver?"ink-saver":""}">${$("#printRoot").innerHTML}</div></body></html>`}
+function printPack(kind){if(!cur){needCaseAction();return}
+ const root=$("#printRoot");
  root.innerHTML=composeBook(cur,kind).join("");root.className=settings.inkSaver?"ink-saver":"";
  const sz=settings.paper==="a4"?{name:"A4",w:"210mm",h:"297mm"}:{name:"letter",w:"8.5in",h:"11in"};
  let st=$("#pageStyle");if(!st){st=document.createElement("style");st.id="pageStyle";document.head.appendChild(st)}
  st.textContent=`@page{size:${sz.name};margin:0}#printRoot .sheet{width:${sz.w};height:${sz.h}}`;
  const old=document.title;document.title=cur.title.replace(/[^\w\- ]/g,"")+" — "+kind+" pack";
- setTimeout(()=>{window.print();document.title=old},60)}
+ toast("Preparing your "+kind+" pack…");
+ if(/Android/i.test(navigator.userAgent||"")){
+  /* Chrome on Android ignores window.print() from a page — open the
+     finished book as its own document so the browser menu's
+     Share → Print → Save as PDF path works, with the steps on screen. */
+  const w=window.open("","_blank");
+  if(w){try{w.document.open();w.document.write(standaloneBookHTML(kind));w.document.close();toast("Book opened in a new tab — ⋮ menu → Share → Print → Save as PDF.");document.title=old;return}catch(e){}}
+  toast("Print window opening — choose “Save as PDF”.");
+ }
+ setTimeout(()=>{window.print();document.title=old},350)}
 function wrapText(ctx,text,x,y,maxW,lh){const words=String(text).split(/\s+/);let line="",yy=y;
  for(const w of words){const t=line?line+" "+w:w;if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,yy);yy+=lh;line=w}else line=t}
  if(line)ctx.fillText(line,x,yy);return yy+lh}
@@ -1171,10 +1201,11 @@ const STARTERS=[
 <script>
 /* ---------------- storage + My Cases ---------------- */
 const LSKEY="whd_cases_v1";
+const LASTKEY="whd_last_case_id";
 function loadCases(){try{return JSON.parse(localStorage.getItem(LSKEY))||[]}catch(e){return[]}}
 function saveCases(a){try{localStorage.setItem(LSKEY,JSON.stringify(a))}catch(e){}}
 function autosave(){if(!cur)return;const a=loadCases();const i=a.findIndex(x=>x.id===cur.id);
- const copy=JSON.parse(JSON.stringify(cur));if(i>=0)a[i]=copy;else a.push(copy);saveCases(a)}
+ const copy=JSON.parse(JSON.stringify(cur));if(i>=0)a[i]=copy;else a.push(copy);saveCases(a);try{localStorage.setItem(LASTKEY,cur.id)}catch(e){}}
 function renderCases(el){
  const saved=loadCases();
  el.innerHTML=`<h2>My Cases</h2><p class="sub">Your cases save automatically on this device. Open the DFY Starter Vault to start selling in minutes — three complete, logic-checked cases, ready to export.</p>
@@ -1190,7 +1221,13 @@ function renderCases(el){
  $$("[data-delc]",el).forEach(b=>b.onclick=()=>{const a=loadCases();a.splice(+b.dataset.delc,1);saveCases(a);render()})}
 
 /* ---------------- init + self tests ---------------- */
+function doGenerate(){cur=generateCase({theme:buildSel.theme,difficulty:buildSel.difficulty,format:buildSel.format,tone:buildSel.tone,title:buildSel.title,seed:Date.now()%2000000000});autosave();toast("Case generated: "+cur.title);render()}
+function restoreLastCase(){if(cur)return;try{const a=loadCases();if(!a.length)return;const id=localStorage.getItem(LASTKEY);const hit=id?a.find(x=>x.id===id):null;cur=JSON.parse(JSON.stringify(hit||a[a.length-1]))}catch(e){}}
+restoreLastCase();
 render();
+const _abG=$("#abGen"),_abP=$("#abPrint");
+if(_abG)_abG.onclick=()=>{activeTab="build";doGenerate()};
+if(_abP)_abP.onclick=()=>printPack("complete");
 if(new URLSearchParams(location.search).has("test")){window.addEventListener("load",()=>setTimeout(runTests,80))}
 function runTests(){const lines=[];let fails=0;const T=(name,cond,extra)=>{lines.push((cond?"PASS":"FAIL")+" | "+name+(extra?" | "+extra:""));if(!cond)fails++};
  for(const tk of Object.keys(THEMES))for(const d of DIFFICULTIES){
