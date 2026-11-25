@@ -1118,7 +1118,7 @@ function coverPNG(c){const cv=document.createElement("canvas");cv.width=1000;cv.
  lines.forEach(L=>{x.fillText(L,500,y);y+=76});
  x.font="26px 'Courier New'";x.fillText(c.suspects.length+" suspects. One killer. No easy answers.",500,y+16);
  x.font="bold 27px Arial";x.fillText((c.suspects.length+" SUSPECTS · "+c.players+" · "+c.playTime+" · "+c.diffLabel).toUpperCase(),500,1290);
- x.font="22px 'Courier New'";x.fillText("PRIVATE INVESTIGATION DOSSIER",60,1370);x.fillText(c.shopName||"SONGLAP DEALS",640,1370);
+ x.font="22px 'Courier New'";x.textAlign="left";x.fillText("PRIVATE INVESTIGATION DOSSIER",60,1370);x.textAlign="center";x.fillText(c.shopName||"SONGLAP DEALS",640,1370);
  if(img){x.save();x.fillStyle="#fdfcf6";x.shadowColor="rgba(0,0,0,.35)";x.shadowBlur=26;x.shadowOffsetY=12;x.fillRect(282,786,436,330);x.restore();
   const iw=img.naturalWidth,ih=img.naturalHeight,tw=420,th=298,s=Math.max(tw/iw,th/ih),sw=tw/s,sh=th/s;
   x.drawImage(img,(iw-sw)/2,(ih-sh)/2,sw,sh,290,794,tw,th);
