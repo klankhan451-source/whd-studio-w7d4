@@ -96,6 +96,20 @@ footer.app{max-width:1180px;margin:0 auto;padding:0 18px 30px;color:var(--ink2);
 .cover h2.cov-title{font-size:31px;line-height:1.12;margin:8px 0 6px;text-transform:uppercase}
 .cover .cov-tag{font-family:"Special Elite",monospace;font-size:12.5px}
 .cover .cov-motif{flex:1;display:flex;align-items:center;justify-content:center;opacity:.9}
+.cover .cov-photo{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 30px;min-height:0}
+.cover .cov-photo-frame{position:relative;width:100%;max-width:262px;aspect-ratio:4/3;background:#fdfcf6;padding:9px;box-shadow:0 12px 24px rgba(0,0,0,.35);transform:rotate(-2deg)}
+.cover .cov-photo-frame img{width:100%;height:100%;object-fit:cover;display:block;background:#d8d2c0}
+.cover .cov-photo-frame .tape{position:absolute;width:64px;height:20px;background:rgba(233,222,178,.85);box-shadow:0 1px 3px rgba(0,0,0,.2);z-index:2}
+.cover .cov-photo-frame .tape.t1{top:-7px;left:-22px;transform:rotate(-38deg)}
+.cover .cov-photo-frame .tape.t2{top:-7px;right:-22px;transform:rotate(38deg)}
+.cover .cov-photo-cap{margin-top:13px;font-family:"Special Elite",monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;opacity:.85;text-align:center}
+.cover .cov-back-flex{display:flex;gap:16px;align-items:flex-start;margin-top:10px}
+.cover .cov-back-photo{flex:0 0 33%;max-width:168px;padding-top:4px}
+.cover .cov-back-photo .cov-photo-frame{max-width:none;padding:6px;transform:rotate(2deg)}
+.cover .cov-back-photo .tape{width:52px;height:18px}
+.cover .cov-back-photo .tape.t1{top:-6px;left:-18px}
+.cover .cov-back-photo .tape.t2{top:-6px;right:-18px}
+.cover .cov-back-photo .cov-photo-cap{margin-top:9px;font-size:9px;letter-spacing:1.8px}
 .cover .cov-badge{margin:0 26px 12px;text-align:center;font-family:"Oswald",sans-serif;letter-spacing:1.5px;font-size:12px;border-top:1.5px solid currentColor;border-bottom:1.5px solid currentColor;padding:7px 4px;text-transform:uppercase}
 .cover .cov-foot{padding:0 18px 14px;display:flex;justify-content:space-between;font-size:10.5px;font-family:"Special Elite",monospace}
 .cover.dark{background:var(--th-bg);color:var(--th-paper)}
@@ -661,7 +675,7 @@ function generateCase(opts){
  const c={id:uid("case"),caseNo:String(101+Math.floor(r()*880)),title:"",themeKey:opts.theme,themeLabel:th.label,
   setting:th.setting,dateStr:th.dateStr,tone:opts.tone,format:opts.format,difficulty:diff.key,diffLabel:diff.label,
   players:diff.players,playTime:diff.playTime,victim,method:pick(r,th.methods),killerIndex:Math.floor(r()*suspects.length),
-  suspects,evidence:[],witnesses:[],timeline:[],hints:[],coverStyle:"vintage",shopName:"",crimeTime:21*60+40,
+  suspects,evidence:[],witnesses:[],timeline:[],hints:[],coverStyle:"vintage",coverPhoto:"",shopName:"",crimeTime:21*60+40,
   crimePlace:locs[0],altPlace:locs[1],seed:opts.seed||1};
  c.title=opts.title&&opts.title.trim()?opts.title.trim():makeTitle(r,th,victim);
  buildStoryFields(c,r);return c}
@@ -954,21 +968,23 @@ function motifSVG(style,color){const c=color||"currentColor";
  case "neon":return `<svg width="170" height="110" viewBox="0 0 170 110">${Array.from({length:9},(_,i)=>`<line x1="${10+i*19}" y1="20" x2="${-20+i*26}" y2="108" stroke="${c}" stroke-width="1" opacity=".65"/>`).join("")}${Array.from({length:6},(_,i)=>`<line x1="0" y1="${24+i*i*2.6}" x2="170" y2="${24+i*i*2.6}" stroke="${c}" stroke-width="1" opacity=".65"/>`).join("")}<circle cx="85" cy="16" r="9" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
  default:return `<svg width="110" height="130" viewBox="0 0 110 130">${[46,38,30,22,14].map(r=>`<path d="M55 ${65-r} a${r} ${r*1.25} 0 1 1 -0.01 0" fill="none" stroke="${c}" stroke-width="2" opacity="${0.45+r/90}"/>`).join("")}<circle cx="55" cy="65" r="5" fill="${c}"/></svg>`}}
 function coverVars(c){const p=THEMES[c.themeKey].palette;return `--th-bg:${p.bg};--th-paper:${p.paper};--th-accent:${p.accent};--th-accent2:${p.accent2};--th-ink:${p.ink}`}
+function coverPhotoFrame(c,cap){return `<div class="cov-photo-frame"><span class="tape t1"></span><span class="tape t2"></span><img src="${c.coverPhoto}" alt="Case photo"></div><div class="cov-photo-cap">${cap}</div>`}
 function coverHTML(c,back){const th=THEMES[c.themeKey];const dark=(c.coverStyle==="deco"||c.coverStyle==="gothic"||c.coverStyle==="neon");
- if(back)return `<div class="cover style-${c.coverStyle} ${dark?"dark":""}" style="${coverVars(c)}">
+ if(back){const blurb=`<p style="font-size:12.5px;line-height:1.55">${esc(c.victim.name)}, ${esc(c.victim.role.toLowerCase())}, is found at ${esc(c.crimePlace)}. ${c.suspects.length} suspects. ${c.evidence.length} pieces of evidence. One timeline that must fit them all. Interview the suspects, work the evidence board, and name the killer — if the file lets you.</p>
+  <h4 style="margin:14px 0 4px;font-family:Oswald;letter-spacing:1.5px;font-size:12px">INSIDE THE FILE</h4>
+  <p style="font-size:12px;line-height:1.7">· Complete case summary &amp; police report<br>· ${c.suspects.length} suspect dossiers with secrets &amp; alibis<br>· ${c.evidence.length} evidence cards, incl. red herrings<br>· Witness statements with deliberate contradictions<br>· Timeline, investigation board &amp; 3-level hints<br>· Host guide, accusation ballots &amp; sealed solution</p>`;
+ return `<div class="cover style-${c.coverStyle} ${dark?"dark":""}" style="${coverVars(c)}">
   <div class="cov-top"><span>CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.themeLabel.toUpperCase())}</span></div>
   <div style="padding:20px 28px 0"><h3 style="font-size:19px;text-transform:uppercase">${esc(c.title)}</h3>
-  <p style="font-size:12.5px;line-height:1.55">${esc(c.victim.name)}, ${esc(c.victim.role.toLowerCase())}, is found at ${esc(c.crimePlace)}. ${c.suspects.length} suspects. ${c.evidence.length} pieces of evidence. One timeline that must fit them all. Interview the suspects, work the evidence board, and name the killer — if the file lets you.</p>
-  <h4 style="margin:14px 0 4px;font-family:Oswald;letter-spacing:1.5px;font-size:12px">INSIDE THE FILE</h4>
-  <p style="font-size:12px;line-height:1.7">· Complete case summary &amp; police report<br>· ${c.suspects.length} suspect dossiers with secrets &amp; alibis<br>· ${c.evidence.length} evidence cards, incl. red herrings<br>· Witness statements with deliberate contradictions<br>· Timeline, investigation board &amp; 3-level hints<br>· Host guide, accusation ballots &amp; sealed solution</p></div>
-  <div class="cov-motif">${motifSVG(c.coverStyle)}</div>
+  ${c.coverPhoto?`<div class="cov-back-flex"><div style="flex:1;min-width:0">${blurb}</div><div class="cov-back-photo">${coverPhotoFrame(c,"Case Photo")}</div></div>`:blurb}</div>
+  ${c.coverPhoto?`<div class="cov-motif"></div>`:`<div class="cov-motif">${motifSVG(c.coverStyle)}</div>`}
   <div class="cov-badge">${c.suspects.length} Suspects · ${esc(c.players)} · ${esc(c.playTime)} · ${esc(c.diffLabel)}</div>
-  <div class="cov-foot"><span>${esc(c.shopName||"A SONGLAP DEALS STUDIO PACK")}</span><span>PRINT · HOST · SOLVE</span></div></div>`;
+  <div class="cov-foot"><span>${esc(c.shopName||"A SONGLAP DEALS STUDIO PACK")}</span><span>PRINT · HOST · SOLVE</span></div></div>`}
  return `<div class="cover style-${c.coverStyle} ${dark?"dark":""}" style="${coverVars(c)}">
   <div class="cov-top"><span>CONFIDENTIAL · CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.dateStr.split(",").pop().trim()||"")}</span></div>
   <div class="cov-label"><div class="over">A Murder Mystery Investigation</div><h2 class="cov-title">${esc(c.title)}</h2><div class="cov-tag">${c.suspects.length} suspects. One killer. No easy answers.</div></div>
   <div class="stamp">Confidential</div>
-  <div class="cov-motif">${motifSVG(c.coverStyle)}</div>
+  ${c.coverPhoto?`<div class="cov-photo">${coverPhotoFrame(c,"Case Photo · Exhibit A")}</div>`:`<div class="cov-motif">${motifSVG(c.coverStyle)}</div>`}
   <div class="cov-badge">${c.suspects.length} Suspects · ${esc(c.players)} · ${esc(c.playTime)} · ${esc(c.diffLabel)}</div>
   <div class="cov-foot"><span>PRIVATE INVESTIGATION DOSSIER</span><span>${esc(c.shopName||"SONGLAP DEALS")}</span></div></div>`}
 function propsHTML(c){return `<div class="props-grid">
@@ -979,9 +995,19 @@ function propsHTML(c){return `<div class="props-grid">
  ${["Best Detective","Sharpest Eye"].map(a=>`<div class="prop"><div style="font-size:19px">🏆</div><b>${a}</b><div class="mini">Awarded for outstanding work on<br><i>${esc(c.title)}</i><br>Signed: ____________________</div></div>`).join("")}
  <div class="prop"><div class="mini">YOU ARE INVITED TO A</div><b style="font-size:16px">Murder Mystery Evening</b><div class="mini" style="line-height:1.9">${esc(c.title)}<br>Date: ${esc((c.invite&&c.invite.date)||"________________")}<br>At: ${esc((c.invite&&c.invite.place)||"________________")}<br>Hosted by: ${esc((c.invite&&c.invite.host)||"________________")}<br><i>Costumes encouraged. Alibis required.</i></div></div>
  </div>`}
+function setCoverPhoto(file){const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const max=1000;let w=img.naturalWidth||1,h=img.naturalHeight||1;const sc=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*sc));h=Math.max(1,Math.round(h*sc));const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);cur.coverPhoto=cv.toDataURL("image/jpeg",0.85);autosave();toast("Cover photo set — see it on both covers below.");render()};img.onerror=()=>toast("That file could not be read as an image.");img.src=rd.result};rd.onerror=()=>toast("That file could not be read.");rd.readAsDataURL(file)}
 function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{date:"",place:"",host:""};
  el.innerHTML=`<h2>Design Studio</h2><p class="sub">Six cover styles over the ${esc(cur.themeLabel)} palette. The cover always carries the case label, the CONFIDENTIAL stamp, and the badge line buyers look for: suspects · players · time · difficulty.</p>
  <label class="f">Cover style</label><div class="btn-row">${COVER_STYLES.map(s=>`<button class="btn ${cur.coverStyle===s.key?"btn-gold":""}" data-cs="${s.key}">${s.label}</button>`).join("")}</div>
+ <label class="f" style="margin-top:16px">📷 Cover Photo (optional)</label>
+ <div class="flex" style="align-items:center;gap:10px;flex-wrap:wrap">
+ <button class="btn" id="covPhotoBtn" type="button">${cur.coverPhoto?"Change photo":"Upload a photo"}</button>
+ <input type="file" id="covPhotoFile" accept="image/*" style="display:none">
+ ${cur.coverPhoto?`<img src="${cur.coverPhoto}" alt="Cover photo preview" style="width:68px;height:51px;object-fit:cover;border:3px solid #fdfcf6;box-shadow:0 2px 8px rgba(0,0,0,.3);transform:rotate(-2deg)"><button class="btn btn-sm" id="covPhotoRemove" type="button">Remove</button>`:`<span class="mini">Add any photo — a house, a suspect, a scene. It appears as a framed, taped case photo on the front cover, and a smaller framed one beside the back-cover blurb. No photo? The covers keep their classic design.</span>`}
+ </div>
+ <label class="f" style="margin-top:16px">Name on cover</label>
+ <input class="inp" id="covName" placeholder="e.g. Mystery Nights Co." value="${esc(cur.shopName)}">
+ <p class="mini" style="margin-top:4px">The name printed on the front &amp; back covers — the same white-label shop name as in Book &amp; Export, saved with the case. (The big case title is set in Build Case.)</p>
  <div class="grid c2" style="align-items:start"><div><label class="f">Front cover</label>${coverHTML(cur,false)}</div>
  <div><label class="f">Back cover</label>${coverHTML(cur,true)}</div></div>
  <h3 style="margin:22px 0 4px">Invitation details (printed on the props page)</h3>
@@ -989,6 +1015,10 @@ function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{da
  <h3 style="margin:22px 0 4px">Printable Props</h3><p class="sub">Badges, evidence envelope labels, name tags, accusation ballots, awards and the invitation — included in the printed pack.</p>
  ${propsHTML(cur)}`;
  $$("[data-cs]",el).forEach(b=>b.onclick=()=>{cur.coverStyle=b.dataset.cs;autosave();render()});
+ const _cpf=$("#covPhotoFile");$("#covPhotoBtn").onclick=()=>_cpf.click();
+ _cpf.onchange=()=>{const f=_cpf.files&&_cpf.files[0];if(f)setCoverPhoto(f)};
+ const _cpr=$("#covPhotoRemove");if(_cpr)_cpr.onclick=()=>{cur.coverPhoto="";autosave();toast("Cover photo removed.");render()};
+ $("#covName").onchange=e=>{cur.shopName=e.target.value;autosave();render()};
  $("#invDate").onchange=e=>{cur.invite.date=e.target.value;autosave()};
  $("#invPlace").onchange=e=>{cur.invite.place=e.target.value;autosave()};
  $("#invHost").onchange=e=>{cur.invite.host=e.target.value;autosave()}}
@@ -1076,7 +1106,8 @@ function wrapText(ctx,text,x,y,maxW,lh){const words=String(text).split(/\s+/);le
  if(line)ctx.fillText(line,x,yy);return yy+lh}
 function downloadURI(uri,name){const a=document.createElement("a");a.href=uri;a.download=name;document.body.appendChild(a);a.click();a.remove()}
 function coverPNG(c){const cv=document.createElement("canvas");cv.width=1000;cv.height=1440;const x=cv.getContext("2d");const p=THEMES[c.themeKey].palette;
- const dark=(c.coverStyle==="deco"||c.coverStyle==="gothic"||c.coverStyle==="neon");x.fillStyle=dark?p.bg:p.paper;x.fillRect(0,0,1000,1440);
+ const dark=(c.coverStyle==="deco"||c.coverStyle==="gothic"||c.coverStyle==="neon");
+ const draw=(img)=>{x.fillStyle=dark?p.bg:p.paper;x.fillRect(0,0,1000,1440);
  x.strokeStyle=dark?p.accent2:p.ink;x.lineWidth=3;x.strokeRect(36,36,928,1368);
  x.fillStyle=dark?p.paper:p.ink;x.font="28px 'Courier New'";x.fillText("CONFIDENTIAL · CASE NO. "+c.caseNo,60,96);
  x.save();x.translate(760,660);x.rotate(-0.1);x.strokeStyle=p.accent;x.lineWidth=5;x.strokeRect(-170,-44,340,88);x.fillStyle=p.accent;x.font="bold 40px Arial";x.textAlign="center";x.fillText("CONFIDENTIAL",0,14);x.restore();x.textAlign="left";
@@ -1088,7 +1119,12 @@ function coverPNG(c){const cv=document.createElement("canvas");cv.width=1000;cv.
  x.font="26px 'Courier New'";x.fillText(c.suspects.length+" suspects. One killer. No easy answers.",500,y+16);
  x.font="bold 27px Arial";x.fillText((c.suspects.length+" SUSPECTS · "+c.players+" · "+c.playTime+" · "+c.diffLabel).toUpperCase(),500,1290);
  x.font="22px 'Courier New'";x.fillText("PRIVATE INVESTIGATION DOSSIER",60,1370);x.fillText(c.shopName||"SONGLAP DEALS",640,1370);
- downloadURI(cv.toDataURL("image/png"),"cover-"+c.caseNo+".png");toast("Cover PNG downloaded.")}
+ if(img){x.save();x.fillStyle="#fdfcf6";x.shadowColor="rgba(0,0,0,.35)";x.shadowBlur=26;x.shadowOffsetY=12;x.fillRect(282,786,436,330);x.restore();
+  const iw=img.naturalWidth,ih=img.naturalHeight,tw=420,th=298,s=Math.max(tw/iw,th/ih),sw=tw/s,sh=th/s;
+  x.drawImage(img,(iw-sw)/2,(ih-sh)/2,sw,sh,290,794,tw,th);
+  x.fillStyle=dark?p.paper:p.ink;x.font="22px 'Courier New'";x.textAlign="center";x.fillText("CASE PHOTO · EXHIBIT A",500,1162);x.textAlign="left"}
+ downloadURI(cv.toDataURL("image/png"),"cover-"+c.caseNo+".png");toast("Cover PNG downloaded.")};
+ if(c.coverPhoto){const im=new Image();im.onload=()=>draw(im);im.onerror=()=>draw(null);im.src=c.coverPhoto}else draw(null)}
 function cardPNG(c,e){const cv=document.createElement("canvas");cv.width=1100;cv.height=680;const x=cv.getContext("2d");
  x.fillStyle="#fffdf4";x.fillRect(0,0,1100,680);x.strokeStyle="#8a7c55";x.lineWidth=4;x.strokeRect(14,14,1072,652);
  x.fillStyle="#9e1b1b";x.font="bold 26px 'Courier New'";x.fillText(e.id+" · "+e.type.toUpperCase(),44,66);
@@ -1316,6 +1352,8 @@ function runTests(){const lines=[];let fails=0;const T=(name,cond,extra)=>{lines
  T("complete pack ends with licence",complete.lastIndexOf("Commercial Licence")>complete.lastIndexOf("Answer Key"));
  const kit=etsyKit(demo);T("etsy kit: title ≤140, 13 tags ≤20 chars",kit.title.length<=140&&kit.tags.length===13&&kit.tags.every(t=>t.length<=20),kit.title.length+" chars");
  T("cover renders in all 6 styles",COVER_STYLES.every(s=>{demo.coverStyle=s.key;return coverHTML(demo,false).includes("cov-title")}));
+ demo.coverPhoto="data:image/gif;base64,R0lGODlhAQABAAAAACw=";const cpF=coverHTML(demo,false),cpB=coverHTML(demo,true);demo.coverPhoto="";
+ T("cover photo appears on front + back covers when set (and not when unset)",cpF.includes("cov-photo")&&cpB.includes("cov-back-photo")&&!coverHTML(demo,false).includes("cov-photo")&&!coverHTML(demo,true).includes("cov-photo"));
  T("props render",propsHTML(demo).includes("ACCUSATION BALLOT"));
  cur=demo;["build","suspects","evidence","witnesses","timeline","design","export","cases"].forEach(t=>{activeTab=t;try{render();T("tab renders: "+t,true)}catch(e){T("tab renders: "+t,false,e.message)}});
  activeTab="build";render();
