@@ -342,8 +342,8 @@ const EVIDENCE_TYPES=[
  {type:"Floor Plan",killer:"A plan of {L} marked with a route that avoids the staffed corridor — the pencil used matches the one in {K}'s pocket.",clear:"A marked plan showing the route {S} actually took, confirmed by two witnesses along it.",desc:"A folded plan with pencil markings."},
  {type:"Missing-Object Report",killer:"A report that a distinctive item belonging to {K} went missing from {L} tonight — the same kind of item found beside the victim.",clear:"A report of a missing item of {S}'s, later found exactly where {S} said it had been left.",desc:"A standard report form, filled in by staff."},
  {type:"Lab Card",killer:"A lab card: traces on the victim's glass match a substance kept under lock in a place only {K} had access to.",clear:"A lab card clearing the drink {S} served — it was tested and found completely ordinary.",desc:"A printed laboratory card with a reference number."},
- {type:"Key Record",killer:"The lock log for {L}: only two keys opened it tonight — the victim's, and one signed out to {K}.",clear:"The lock log shows {S}'s key was never used after early evening — it hung on the board all night.",desc:"A printed access log with two highlighted lines."},
- {type:"Torn Glove",killer:"A torn glove of an unusual colour — {K} was seen wearing its pair earlier, and now owns only one.",clear:"A glove belonging to {S}, torn days ago and mended — the mending thread proves it is an old tear.",desc:"A single torn glove in a sealed evidence bag."},
+ {type:"Key Record",killer:"The lock log for {L}: only two keys opened it that night — the victim's, at {KT1}, and one signed out to {K}, at {KT2}. The second key was never signed back in.",clear:"The lock log shows {S}'s key was never used after early evening — it hung on the board all night.",desc:"A printed access log with two highlighted lines."},
+ {type:"Torn Glove",killer:"A torn glove of an unusual colour — fellow guests saw {K} wearing its pair in {L2} earlier in the evening, and {K} now owns only one.",clear:"A glove belonging to {S}, torn days ago and mended — the mending thread proves it is an old tear.",desc:"A single torn glove in a sealed evidence bag."},
  {type:"Appointment Card",killer:"The victim's appointment card: a private meeting with {K} at the critical hour, never mentioned by {K}.",clear:"An appointment card showing {S}'s meeting with the victim was scheduled for tomorrow, not tonight.",desc:"A small card from the victim's pocket diary."},
  {type:"Ledger Page",killer:"A ledger page where figures were altered tonight — the alteration benefits {K} alone.",clear:"A ledger page proving the money {S} handled tonight balances to the penny.",desc:"A ruled ledger page with one line re-written in fresh ink."},
  {type:"Broken Watch",killer:"A watch stopped at the critical hour, engraved with initials — a gift the victim once gave to {K}.",clear:"A stopped watch that at first seemed to fix the time — it had actually stopped the day before, clearing {S}'s timeline.",desc:"A watch with a cracked face, hands stopped."},
@@ -655,7 +655,7 @@ function makeTitle(r,th,victim){const last=victim.name.replace(/^(Lord|Lady|Dr\.
 const CLUE_TEMPLATES=[
  "Saw {O} heading toward {L} a little before {T}, carrying something under one arm.",
  "Heard the victim say to {O}, earlier in the evening: 'We settle this tonight, one way or another.'",
- "Noticed {O} was missing from {L2} for a good twenty minutes before the discovery.",
+ "Noticed {O} was missing from {L2} for a good twenty minutes earlier in the evening.",
  "Knows the victim and {O} had quarrelled recently about money — whatever {O} claims.",
  "Saw {O} wash their hands very carefully, twice, not long before the alarm was raised.",
  "Overheard {O} asking where the victim would be after the main event ended.",
@@ -705,7 +705,12 @@ function buildStoryFields(c,r){
  c.suspects.forEach((s,i)=>{const os=shuffle(r,c.suspects.filter((_,j)=>j!==i));let firstTpl=-1;
   s.clues=[0,1].map(k=>{const ti=nextClueTpl(firstTpl);if(k===0)firstTpl=ti;
    const o=os.find(x=>!usedPair.has(ti+"|"+x.name))||os[k%os.length];usedPair.add(ti+"|"+o.name);
-   return fill(CLUE_TEMPLATES[ti],c,{"{O}":o.name,"{T}":fmtTime(ct-25+k*20)})})});
+   /* round 4: a "heading toward the scene" sighting of an INNOCENT is timed
+      before their confirmed alibi window opens (ct-25) — at the in-window
+      time (ct-5) it would flatly contradict the alibi the file itself
+      confirms as true, and no page explains the clash */
+   const clueT=(ti===0&&c.suspects.indexOf(o)!==c.killerIndex)?ct-25:ct-25+k*20;
+   return fill(CLUE_TEMPLATES[ti],c,{"{O}":o.name,"{T}":fmtTime(clueT)})})});
  /* timeline */
  const tl=[];const D=(mins,event,who,tag)=>tl.push({time:fmtTime(mins),mins,event,who:who||"",tag:tag||"scene"});
  D(ct-160,"The gathering begins at "+c.setting+". "+c.victim.name+" arrives in good spirits and greets the guests.",c.victim.name);
@@ -726,7 +731,7 @@ function buildStoryFields(c,r){
     potting shed…), that place wins over the default recovery location. */
  const foundFor=(filledText,fallback)=>{if(/found beside the (body|victim)|found under the victim|victim's (pocket|chair)/.test(filledText)||filledText.includes("found at "+c.crimePlace))return c.crimePlace;
   const m=filledText.match(/found in (the [a-z' ]+?)[,.;—]/);return m?m[1].trim():fallback};
- for(let k=0;k<2;k++){const t=take();const kt=fill(t.killer,c);evs.push({type:t.type,title:t.type+" — "+(k===0?"found at the scene":"the second lead"),desc:fill(t.desc,c),
+ for(let k=0;k<2;k++){const t=take();const kt=fill(t.killer,c,{"{KT1}":fmtTime(ct-4),"{KT2}":fmtTime(ct-2)});evs.push({type:t.type,title:t.type+" — "+(k===0?"found at the scene":"the second lead"),desc:fill(t.desc,c),
    text:kt,found:foundFor(kt,k===0?c.crimePlace:c.altPlace),linked:K.name,kind:"killer",target:c.killerIndex,contradictsAlibi:k===1,
    reveals:"A strong lead. Two items like this, together, are hard to explain away.",revealsHost:"Points directly at "+K.name+(k===1?" and breaks their alibi.":"."),explain:""})}
  others.forEach(i=>{const t=take();const s=c.suspects[i];evs.push({type:t.type,title:t.type+" — the "+s.name.split(" ").pop()+" record",desc:fill(t.desc,c,{"{S}":s.name}),
@@ -784,8 +789,11 @@ function validateCase(c){const K=c.suspects[c.killerIndex];const out=[];const pu
  push(kc.length>=2,"At least two independent clues point to the killer",kc.length+" killer clue(s): "+(kc.map(e=>e.id).join(", ")||"none"));
  const contra=kc.some(e=>e.contradictsAlibi)||c.witnesses.some(w=>K&&w.inconsistency.includes(K.name));
  push(!!contra,"Killer's alibi is contradicted by a clue or witness",contra?"The alibi cannot survive the file.":"Nothing breaks the killer's story — add a contradicting clue or witness.");
- c.suspects.forEach((s,i)=>{if(i!==c.killerIndex){const cl=c.evidence.some(e=>e.kind==="clear"&&e.target===i);
-  push(cl,"Innocent can be eliminated: "+s.name,cl?"A dated, witnessed record clears them at "+fmtTime(c.crimeTime)+".":"NO clearing evidence — players cannot rule this suspect out.")}});
+ c.suspects.forEach((s,i)=>{if(i!==c.killerIndex){const clE=c.evidence.find(e=>e.kind==="clear"&&e.target===i);const cl=!!clE;
+  /* the detail states only what the engine + file actually establish: a
+     confirmed alibi covering the crime time, corroborated by the named
+     clearing item — not a "dated, witnessed record" for every innocent */
+  push(cl,"Innocent can be eliminated: "+s.name,cl?"Confirmed alibi covering "+fmtTime(c.crimeTime)+", corroborated by "+clE.id+".":"NO clearing evidence — players cannot rule this suspect out.")}});
  const badW=c.witnesses.filter(w=>w.inconsistency&&!w.explains);
  push(badW.length===0,"Every witness contradiction is explained",badW.length?"Unexplained: "+badW.map(w=>w.name).join(", "):"All contradictions are intentional and explained in the answer key.");
  const badH=c.evidence.filter(e=>e.kind==="herring"&&!e.explain);
@@ -988,6 +996,10 @@ function motifSVG(style,color){const c=color||"currentColor";
 function coverVars(c){const p=THEMES[c.themeKey].palette;return `--th-bg:${p.bg};--th-paper:${p.paper};--th-accent:${p.accent};--th-accent2:${p.accent2};--th-ink:${p.ink}`}
 function coverPhotoFrame(c,cap){return `<div class="cov-photo-frame"><span class="tape t1"></span><span class="tape t2"></span><img src="${c.coverPhoto}" alt="Case photo"></div><div class="cov-photo-cap">${cap}</div>`}
 function coverHTML(c,back){const th=THEMES[c.themeKey];const dark=(c.coverStyle==="deco"||c.coverStyle==="gothic"||c.coverStyle==="neon");
+ /* round 4: long titles shrink to fit — at the full 31px a 5–6 line title
+    grows the label box down into the CONFIDENTIAL stamp zone and the two
+    texts visually merge ("FINALS NIGHT" + "CONFIDENTIAL") */
+ const tFit=c.title.length>52?20:c.title.length>38?24:c.title.length>26?27:31;
  if(back){const blurb=`<p style="font-size:12.5px;line-height:1.55">${esc(c.victim.name)}, ${esc(c.victim.role)}, is found at ${esc(c.crimePlace)}. ${c.suspects.length} suspects. ${c.evidence.length} pieces of evidence. One timeline that must fit them all. Interview the suspects, work the evidence board, and name the killer — if the file lets you.</p>
   <h4 style="margin:14px 0 4px;font-family:Oswald;letter-spacing:1.5px;font-size:12px">INSIDE THE FILE</h4>
   <p style="font-size:12px;line-height:1.7">· Complete case summary &amp; police report<br>· ${c.suspects.length} suspect dossiers with secrets &amp; alibis<br>· ${c.evidence.length} evidence cards, incl. red herrings<br>· Witness statements with deliberate contradictions<br>· Timeline, investigation board &amp; 3-level hints<br>· Host guide, accusation ballots &amp; sealed solution</p>`;
@@ -1000,7 +1012,7 @@ function coverHTML(c,back){const th=THEMES[c.themeKey];const dark=(c.coverStyle=
   <div class="cov-foot"><span>${esc(c.shopName||"A SONGLAP DEALS STUDIO PACK")}</span><span>PRINT · HOST · SOLVE</span></div></div>`}
  return `<div class="cover style-${c.coverStyle} ${dark?"dark":""}" style="${coverVars(c)}">
   <div class="cov-top"><span>CONFIDENTIAL · CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.dateStr.split(",").pop().trim()||"")}</span></div>
-  <div class="cov-label"><div class="over">A Murder Mystery Investigation</div><h2 class="cov-title">${esc(c.title)}</h2><div class="cov-tag">${c.suspects.length} suspects. One killer. No easy answers.</div></div>
+  <div class="cov-label"><div class="over">A Murder Mystery Investigation</div><h2 class="cov-title" style="font-size:${tFit}px">${esc(c.title)}</h2><div class="cov-tag">${c.suspects.length} suspects. One killer. No easy answers.</div></div>
   <div class="stamp">Confidential</div>
   ${c.coverPhoto?`<div class="cov-photo">${coverPhotoFrame(c,"Case Photo · Exhibit A")}</div>`:`<div class="cov-motif">${motifSVG(c.coverStyle)}</div>`}
   <div class="cov-badge">${c.suspects.length} Suspects · ${esc(c.players)} · ${esc(c.playTime)} · ${esc(c.diffLabel)}</div>
@@ -1037,6 +1049,15 @@ function validatorSheets(c){const checks=validateCase(c);const pages=[];let pg=[
  checks.forEach(x=>{const h=estCheckPx(x);if(pg.length&&used+h>VAL_PAGE_BUDGET){pages.push(pg);pg=[];used=0}pg.push(x);used+=h});
  if(pg.length)pages.push(pg);
  return pages.map((p,ix)=>`<h2 class="pg-title">Logic Validator Report${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${p.map(validatorCheckHTML).join("")}`)}
+/* round 4: the Host Reference — the secrets, alibi verdicts and witness
+   conceals that used to be annotated onto the player documents themselves
+   now live on these host-only sheets (with the Answer Key), so dossiers,
+   witness statements and evidence cards print clean in EVERY pack and a
+   host can hand any document to the table straight from the complete book. */
+function hostRefSheets(c){const blocks=c.suspects.map((s,i)=>`<div class="dossier"><b>${esc(s.name)}</b> — ${esc(s.occupation)}<p><b>Secret:</b> ${esc(s.secret)}</p><p><b>Alibi check:</b> ${esc(s.alibiNote)} ${i===c.killerIndex?"<b>★ THIS IS THE KILLER.</b>":""}</p></div>`);
+ const wit=`<h3 style="margin:14px 0 6px">What the Witnesses Conceal</h3>${c.witnesses.map(w=>`<p style="margin:4px 0"><b>${esc(w.name)} conceals:</b> ${esc(w.concealed)}</p>`).join("")}`;
+ const pages=[];for(let i=0;i<blocks.length;i+=6)pages.push(blocks.slice(i,i+6));
+ return pages.map((pg,ix)=>`<h2 class="pg-title">Host Reference — Secrets &amp; Alibi Checks${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${pg.join("")}${ix===pages.length-1?wit:""}`)}
 function setCoverPhoto(file){const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const max=1000;let w=img.naturalWidth||1,h=img.naturalHeight||1;const sc=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*sc));h=Math.max(1,Math.round(h*sc));const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);cur.coverPhoto=cv.toDataURL("image/jpeg",0.85);autosave();toast("Cover photo set — see it on both covers below.");render()};img.onerror=()=>toast("That file could not be read as an image.");img.src=rd.result};rd.onerror=()=>toast("That file could not be read.");rd.readAsDataURL(file)}
 function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{date:"",place:"",host:""};
  el.innerHTML=`<h2>Design Studio</h2><p class="sub">Six cover styles over the ${esc(cur.themeLabel)} palette. The cover always carries the case label, the CONFIDENTIAL stamp, and the badge line buyers look for: suspects · players · time · difficulty.</p>
@@ -1071,17 +1092,22 @@ function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{da
 function pgFoot(c,n,total){return `<div class="pg-foot"><span>${esc(c.shopName||"Created with Whodunit Case-File Builder")}</span><span>${esc(c.title)} · Case No. ${esc(c.caseNo)}</span><span>Page ${n} / ${total}</span></div>`}
 function sheet(c,inner,n,total){return `<div class="sheet"><div class="pg-inner">${inner}${pgFoot(c,n,total)}</div></div>`}
 function pairs(a){const o=[];for(let i=0;i<a.length;i+=2)o.push(a.slice(i,i+2));return o}
+/* round 4: dossiers print CLEAN in every pack (the `full` host block was
+   removed) — secrets + alibi verdicts live on the Host Reference sheets */
 function dossierCard(c,s,i,full){return `<div class="dossier"><div style="display:flex;gap:10px"><div class="portrait" style="width:52px;height:52px">${portraitSVG(s,52)}</div><div>
  <b style="font-size:15px">${esc(s.name)}</b> — ${esc(s.occupation)}<br><span class="mini">${esc(s.relationship)}</span></div></div>
  <p><b>Personality:</b> ${esc(s.personality)}</p><p><b>Motive:</b> ${esc(s.motive)}</p>
  <p><b>Alibi (as claimed):</b> ${esc(s.alibi)}</p><p><b>Suspicious detail:</b> ${esc(s.suspicious)}</p>
  <p><b>Clues I can share:</b></p><ul style="margin:2px 0">${s.clues.map(cl=>`<li>${esc(cl)}</li>`).join("")}</ul>
- ${full?`<p><b>SECRET (own role card · host):</b> ${esc(s.secret)}</p><p><b>Alibi check:</b> ${esc(s.alibiNote)} ${i===c.killerIndex?'<b>★ THIS IS THE KILLER.</b>':""}</p>`:""}</div>`}
-function evidenceCard(c,e,host){return `<div class="evcard"><div class="evid">${esc(e.id)} · ${esc(e.type).toUpperCase()} ${host&&e.kind==="herring"?'· <b>RED HERRING — HOST ONLY</b>':""} ${host&&e.kind==="killer"?'· <b>KEY CLUE — HOST ONLY</b>':""}</div>
+</div>`}
+/* round 4: evidence cards print CLEAN in every pack — the host verdicts
+   (key clue / red herring / explanation) live in the Answer Key, so a card
+   can be handed to the table straight from any pack without leaking.
+   An item with no linked suspect omits the Linked-to segment entirely. */
+function evidenceCard(c,e,host){return `<div class="evcard"><div class="evid">${esc(e.id)} · ${esc(e.type).toUpperCase()}</div>
  <b style="font-size:14px">${esc(e.title)}</b><p style="margin:4px 0"><i>${esc(e.desc)}</i></p><p style="margin:4px 0">${esc(e.text)}</p>
- <p style="margin:4px 0"><b>Found:</b> ${esc(e.found)} · <b>Linked to:</b> ${esc(e.linked)}</p>
- <p style="margin:4px 0"><b>What it may reveal:</b> ${esc(host?e.revealsHost:e.reveals)}</p>
- ${host&&e.explain?`<p style="margin:4px 0"><b>Host explanation:</b> ${esc(e.explain)}</p>`:""}</div>`}
+ <p style="margin:4px 0"><b>Found:</b> ${esc(e.found)}${e.linked&&e.linked!=="—"?` · <b>Linked to:</b> ${esc(e.linked)}`:""}</p>
+ <p style="margin:4px 0"><b>What it may reveal:</b> ${esc(e.reveals)}</p></div>`}
 function composeBook(c,kind){const host=kind!=="player";const S=[];const raw=[];
  const add=(html,cover)=>raw.push({html,cover:!!cover});
  add(coverHTML(c,false),true);
@@ -1090,23 +1116,25 @@ function composeBook(c,kind){const host=kind!=="player";const S=[];const raw=[];
   <h3>Print &amp; sort</h3><p>1. Print the player pack for the table. 2. Keep the sealed solution and this guide with you. 3. Put evidence into three envelopes by round: <b>Round 1</b> — case summary + dossiers; <b>Round 2</b> — ${c.evidence.slice(0,Math.ceil(c.evidence.length/2)).map(e=>e.id).join(", ")}; <b>Round 3</b> — ${c.evidence.slice(Math.ceil(c.evidence.length/2)).map(e=>e.id).join(", ")} + witness statements.</p>
   <h3>Run the night</h3><p>Read the case summary aloud. Give players 15 minutes with the dossiers, then release Round 2, then Round 3. Offer hints only when the table stalls — Hint 1 first. Collect accusation ballots, then open the sealed solution and read the reveal script.</p>
   <h3>Character assignment</h3><table><tr><th>Suspect</th><th>Role</th><th>Assignment</th></tr>${c.suspects.map((s,i)=>`<tr><td>${esc(s.name)}</td><td>${esc(s.occupation)}</td><td>${i<6?"Mandatory":"Optional (extra guest)"}</td></tr>`).join("")}</table>
-  <p><b>Host-can-play:</b> the solution stays sealed until the reveal, so you can investigate alongside your guests.</p>`);
+  <p><b>Host-can-play:</b> the solution stays sealed until the reveal, so you can investigate alongside your guests.</p>
+  <p><b>Extra players:</b> more guests than suspects? They play as detectives — hand them the detective badges from the props pages. Detectives interview the suspects, work the investigation board and cast accusation ballots alongside everyone else.</p>`);
  add(`<h2 class="pg-title">Case Summary — Police Report</h2>
   <p class="typew">CASE NO. ${esc(c.caseNo)} · ${esc(c.dateStr)} · ${esc(c.themeLabel).toUpperCase()}</p>
   <p><b>Victim:</b> ${esc(c.victim.name)} — ${esc(c.victim.role)}.</p><p>${esc(c.victim.profile)}</p>
   <p><b>Setting:</b> ${esc(c.setting)}.</p>
   <p><b>Discovery:</b> The victim was found at ${esc(c.crimePlace)} at ${fmtTime(c.crimeTime+25)}. The estimated time of the crime is ${fmtTime(c.crimeTime)}.</p>
-  ${host?`<p><b>Method (host copy):</b> ${esc(c.method)}</p>`:`<p><b>Cause:</b> Recorded in the sealed solution, held by the host.</p>`}
+  <p><b>Cause:</b> Recorded in the sealed solution, held by the host.</p>
   <p><b>Persons of interest:</b> ${c.suspects.map(s=>esc(s.name)).join(" · ")}.</p>
   <p><b>Investigator's note:</b> Everyone in this file had a secret. Only one secret was worth killing for. Work the evidence, test every alibi against the timeline, and beware the items that look <i>too</i> guilty.</p>`);
  pairs(c.suspects).forEach((pr,pi)=>add(`<h2 class="pg-title">Suspect Dossiers ${pairs(c.suspects).length>1?"("+(pi+1)+")":""}</h2>`+pr.map(s=>dossierCard(c,s,c.suspects.indexOf(s),host)).join("")));
  pairs(c.evidence).forEach((pr,pi)=>add(`<h2 class="pg-title">Evidence ${pairs(c.evidence).length>1?"("+(pi+1)+")":""}</h2>`+pr.map(e=>evidenceCard(c,e,host)).join("")));
- pairs(c.witnesses).forEach(pr=>add(`<h2 class="pg-title">Witness Statements</h2>`+pr.map(w=>`<div class="dossier"><b class="typew">${esc(w.name)}</b> — ${esc(w.role)} · ${esc(w.time)}<p><b>Saw:</b> ${esc(w.seen)}</p><p><b>Heard:</b> ${esc(w.heard)}</p><p><b>Note on this account:</b> ${esc(w.inconsistency)}</p>${host?`<p><b>Conceals (host):</b> ${esc(w.concealed)}</p><p><b>Explanation (host):</b> ${esc(w.explains)}</p>`:""}</div>`).join("")));
- add(`<h2 class="pg-title">Timeline of the Evening</h2><table><tr><th>Time</th><th>Event</th>${host?"<th>Tag</th>":""}</tr>${c.timeline.map(e=>`<tr><td class="typew">${esc(e.time)}</td><td>${esc(e.event)}</td>${host?`<td>${esc(e.tag)}</td>`:""}</tr>`).join("")}</table><p class="mini">Test every alibi against this table. One suspect cannot be placed anywhere at the critical hour.</p>`);
+ pairs(c.witnesses).forEach(pr=>add(`<h2 class="pg-title">Witness Statements</h2>`+pr.map(w=>`<div class="dossier"><b class="typew">${esc(w.name)}</b> — ${esc(w.role)} · ${esc(w.time)}<p><b>Saw:</b> ${esc(w.seen)}</p><p><b>Heard:</b> ${esc(w.heard)}</p><p><b>Note on this account:</b> ${esc(w.inconsistency)}</p></div>`).join("")));
+ add(`<h2 class="pg-title">Timeline of the Evening</h2><table><tr><th>Time</th><th>Event</th></tr>${c.timeline.map(e=>`<tr><td class="typew">${esc(e.time)}</td><td>${esc(e.event)}</td></tr>`).join("")}</table><p class="mini">Test every alibi against this table. One suspect cannot be placed anywhere at the critical hour.</p>`);
  add(`<h2 class="pg-title">Investigation Board</h2><div class="board-cols">${c.suspects.map((s,i)=>`<div class="board-card"><b class="nm">${esc(s.name)}</b><br><span class="mini">${esc(s.occupation)}</span><br><b>Motive:</b> ${esc(s.motive)}<br><b>Evidence:</b><br>${c.evidence.filter(e=>e.target===i||e.linked===s.name).map(e=>`<span class="chip">${esc(e.id)} ${esc(e.type)}</span>`).join("")||'<span class="mini">none yet</span>'}</div>`).join("")}</div><h3>My theory</h3><p style="line-height:2.2">The killer is ______________________ because ______________________________________________<br>and the evidence that proves it is ____________ and ____________.</p>`);
  add(`<h2 class="pg-title">Hints — Open Only If Stuck</h2>${c.hints.map(h=>`<div class="evcard"><b>HINT ${h.level}</b><p>${esc(h.text)}</p></div>`).join("")}<p class="mini">Hosts: read one hint at a time, lowest first.</p>`);
  if(kind!=="host")propsSheets(c).forEach(pg=>add(pg));
- if(host){add(`<div class="sealed" style="margin-top:1.2in"><div class="stamp" style="font-size:26px">Sealed Solution</div><h2 style="font-size:26px;margin:14px 0">HOST ONLY</h2><p>Do not open until every accusation ballot is in.<br>Case No. ${esc(c.caseNo)} · ${esc(c.title)}</p><p class="typew">Breaking this seal early spoils the night.</p></div>`);
+ if(host){hostRefSheets(c).forEach(pg=>add(pg));
+  add(`<div class="sealed" style="margin-top:1.2in"><div class="stamp" style="font-size:26px">Sealed Solution</div><h2 style="font-size:26px;margin:14px 0">HOST ONLY</h2><p>Do not open until every accusation ballot is in.<br>Case No. ${esc(c.caseNo)} · ${esc(c.title)}</p><p class="typew">Breaking this seal early spoils the night.</p></div>`);
   const sol=solutionHTML(c);const cut=sol.indexOf("<h3>Why the Innocent");
   add(`<h2 class="pg-title">Answer Key (1 of 2)</h2>`+(cut>0?sol.slice(0,cut):sol));
   if(cut>0)add(`<h2 class="pg-title">Answer Key (2 of 2)</h2>`+sol.slice(cut));
@@ -1173,7 +1201,7 @@ function cardPNG(c,e){const cv=document.createElement("canvas");cv.width=1100;cv
  x.fillStyle="#221d14";x.font="bold 34px Georgia";let y=wrapText(x,e.title,44,116,1010,40);
  x.font="italic 24px Georgia";y=wrapText(x,e.desc,44,y+6,1010,32);
  x.font="25px Georgia";y=wrapText(x,e.text,44,y+10,1010,34);
- x.font="24px Georgia";wrapText(x,"Found: "+e.found+" · Linked to: "+e.linked,44,Math.max(y+16,560),1010,32);
+ x.font="24px Georgia";wrapText(x,"Found: "+e.found+(e.linked&&e.linked!=="—"?" · Linked to: "+e.linked:""),44,Math.max(y+16,560),1010,32);
  x.font="22px 'Courier New'";x.fillText(c.title+" · Case No. "+c.caseNo,44,640);
  downloadURI(cv.toDataURL("image/png"),"evidence-"+e.id+".png")}
 function etsyKit(c){const title=(c.title+" | Printable Murder Mystery Case File Game | "+c.suspects.length+" Suspects, Evidence, Clues & Sealed Solution | "+c.themeLabel+" Party Game PDF").slice(0,140);
@@ -1427,6 +1455,26 @@ function runTests(){const lines=[];let fails=0;const T=(name,cond,extra)=>{lines
   T("E11 validator sheets stay within the page budget "+tk+"/"+d.key,vs.every(pg=>{const inPg=checks.filter(x=>pg.includes(esc(x.label)));return inPg.length<=1||inPg.reduce((a,x)=>a+estCheckPx(x),0)<=VAL_PAGE_BUDGET}),vs.length+" sheet(s)");
   if(d.key==="expert")T("E11 validator report paginates at expert size "+tk,vs.length>=2,vs.length+" sheets")}
  T("E11 host + complete books carry the full report; player pack has none",composeBook(demo,"host").join("").includes("Evidence file is substantial")&&composeBook(demo,"complete").join("").includes("Evidence file is substantial")&&!composeBook(demo,"player").join("").includes("Logic Validator Report"));
+ /* Round 4 — Gemini sweep review + ChatGPT Red Team claims, verified
+    against renders/model before fixing: player documents print clean in
+    EVERY pack (host verdicts moved to the Host Reference + Answer Key),
+    sighting clues never contradict a confirmed alibi, the validator's
+    wording matches what the engine checks, long cover titles fit. */
+ {const c4=generateCase({theme:"manor",difficulty:"medium",format:FORMATS[0],tone:"Serious",seed:20261});
+  const comp4=composeBook(c4,"complete").join(""),host4=composeBook(c4,"host").join(""),play4=composeBook(c4,"player").join("");
+  const docZone=comp4.slice(0,comp4.indexOf("Host Reference"));
+  T("E12 documents carry no host annotations in any pack",!docZone.includes("Alibi check:")&&!docZone.includes("THIS IS THE KILLER")&&!comp4.includes("SECRET (own role card")&&!comp4.includes("KEY CLUE — HOST ONLY")&&!comp4.includes("RED HERRING — HOST ONLY")&&!comp4.includes("Host explanation:")&&!comp4.includes("Conceals (host)")&&!comp4.includes("Method (host copy)"));
+  T("E12 host reference carries secrets, alibi checks + conceals",comp4.includes("Host Reference — Secrets &amp; Alibi Checks")&&comp4.includes("THIS IS THE KILLER")&&comp4.includes("What the Witnesses Conceal")&&host4.includes("Host Reference"));
+  T("E12 quick-start defines roles for extra players",comp4.includes("Extra players")&&comp4.includes("detective badges"));
+  T("E12 unlinked evidence prints no empty Linked-to segment",!comp4.includes("Linked to:</b> —")&&!play4.includes("Linked to:</b> —"));
+  T("E12 validator elimination wording matches the real check",validateCase(c4).filter(x=>x.label.indexOf("Innocent can be eliminated")===0).every(x=>x.detail.includes("corroborated by EX-"))&&!validateCase(c4).some(x=>x.detail.includes("dated, witnessed record")));
+  const longT=Object.assign({},c4,{title:"Murder at the Starlight Arcade & Roller Rink on Its Championship Finals Night"});
+  T("E12 long cover titles shrink clear of the stamp zone",coverHTML(longT,false).includes('cov-title" style="font-size:20px')&&coverHTML(c4,false).includes('cov-title" style="font-size:31px'));
+  let sightOK=true,keyOK=true;for(const tk of Object.keys(THEMES)){for(const sd of [20261,777]){const cc=generateCase({theme:tk,difficulty:"medium",format:FORMATS[0],tone:"Serious",seed:sd});const K=cc.suspects[cc.killerIndex];
+   cc.suspects.forEach(s=>s.clues.forEach(cl=>{if(cl.includes("heading toward "+cc.crimePlace)&&cl.includes("a little before "+fmtTime(cc.crimeTime-5))&&!cl.includes(K.name))sightOK=false;if(cl.includes("missing from "+cc.altPlace)&&cl.includes("before the discovery"))sightOK=false}));
+   cc.evidence.filter(e=>e.kind==="killer"&&e.type==="Key Record").forEach(e=>{if(!e.text.includes(fmtTime(cc.crimeTime-4))||!e.text.includes(fmtTime(cc.crimeTime-2)))keyOK=false})}}
+  T("E12 sighting clues never contradict a confirmed alibi",sightOK);
+  T("E12 key-record killer text carries real timestamps",keyOK)}
  T("props render",propsHTML(demo).includes("ACCUSATION BALLOT"));
  cur=demo;["build","suspects","evidence","witnesses","timeline","design","export","cases"].forEach(t=>{activeTab=t;try{render();T("tab renders: "+t,true)}catch(e){T("tab renders: "+t,false,e.message)}});
  activeTab="build";render();
