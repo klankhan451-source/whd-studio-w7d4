@@ -193,6 +193,7 @@ footer.app{max-width:1180px;margin:0 auto;padding:0 18px 30px;color:var(--ink2);
 .sheet .evcard{border:1.5px solid #8a7c55;border-radius:8px;padding:10px 12px;margin:0 0 10px;background:#fffdf4}
 .sheet .evcard .evid{font-family:"Special Elite",monospace;font-size:11px;color:var(--accent);letter-spacing:1px}
 .sheet .dossier{border:1.5px solid #8a7c55;border-radius:8px;padding:12px 14px;margin-bottom:12px;background:#fffdf4}
+.sheet .dossier.compact{padding:8px 12px;margin-bottom:8px}
 .sheet .cover-sheet{padding:0}
 .sheet .cover-sheet .cover{max-width:none;width:100%;height:100%;aspect-ratio:auto;border-radius:0;box-shadow:none}
 .ink-saver .sheet{background:#fff !important}
@@ -201,6 +202,8 @@ footer.app{max-width:1180px;margin:0 auto;padding:0 18px 30px;color:var(--ink2);
 .ink-saver .sheet .cover *{color:#111 !important;border-color:#111 !important;text-shadow:none !important;box-shadow:none !important}
 .ink-saver .sheet .cover .stamp{color:#111 !important;border-color:#111 !important}
 .sealed{background:repeating-linear-gradient(45deg,#f3ecd9,#f3ecd9 14px,#ece1c6 14px,#ece1c6 28px);border:3px dashed var(--accent);border-radius:10px;padding:26px;text-align:center}
+.host-banner{border:2px solid #9e1b1b;color:#9e1b1b;font-weight:700;text-align:center;letter-spacing:1px;padding:4px 8px;margin:0 0 8px;border-radius:6px;font-size:12px}
+.ink-saver .host-banner{color:#111 !important;border-color:#111 !important}
 .board-cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
 .board-card{border:1.5px solid #8a7c55;border-radius:8px;padding:9px;background:#fffdf4;font-size:12px}
 .board-card b.nm{font-size:13px}
@@ -328,36 +331,53 @@ const PERSONALITIES=["Calm and precise, with a dry sense of humour","Nervous tal
 const SUSPICIOUS=["Was seen slipping something into a coat pocket earlier in the evening","Keeps glancing at the door as if expecting someone","Gave two slightly different versions of the same story within an hour","Has a fresh scratch on one hand and no good explanation for it","Was overheard arguing in a low voice shortly before the discovery","Arrived with a bag that has not been seen since","Seems far too interested in what the investigators have found","Wiped a glass clean that nobody had asked them to touch","Knows a detail about the scene that was never announced publicly","Was found standing alone in the dark, claiming to be 'getting air'"];
 const GENERIC_SECRETS=["Is quietly deep in debt and has been borrowing against future income","Has been meeting someone in secret for months and lied about it tonight","Was cut out of a will and told no one","Was cut out of a deal and told no one","Was cut out of a partnership and told no one","Carries a forged letter they have been afraid to use","Once caused an accident they never took responsibility for","Has been skimming small amounts of money for over a year","Is not who their documents say they are — the name is borrowed","Promised the same favour to two different people tonight","Destroyed a document earlier today and hopes no copy exists","Was blackmailed last month and paid without telling anyone"];
 const GENERIC_MOTIVES=["Stood to inherit money the moment the victim was gone","Stood to inherit property the moment the victim was gone","Was about to be exposed by the victim over an old secret","Had been publicly humiliated by the victim and never forgave it","Stood to gain a promotion the victim was blocking","Stood to gain a position the victim was blocking","Believed the victim had ruined someone they loved","Was owed a large sum the victim refused to repay","Feared the victim would sell something they depended on","Feared the victim would close something they depended on","Feared the victim would give away something they depended on","Was about to lose custody because of the victim's decision","Was about to lose status because of the victim's decision","Was about to lose membership because of the victim's decision"];
+/* round 5: the killer's motive follows from their secret — a vague "sell
+   something" motive never explained a borrowed identity, and the answer key
+   must never print a motive the dossier does not support. Every secret has
+   its linked motive here; buildStoryFields applies it to the killer. */
+const KILLER_MOTIVE_LINKS={
+ "Is not who their documents say they are — the name is borrowed":"Feared the victim was about to expose that their name is borrowed — the life they built under it would collapse",
+ "Was blackmailed last month and paid without telling anyone":"Feared the victim would tell everyone about the blackmail payments",
+ "Has been skimming small amounts of money for over a year":"Feared the victim had found the missing money and was about to expose the skimming",
+ "Destroyed a document earlier today and hopes no copy exists":"Feared the victim held the only other copy of the document they destroyed",
+ "Carries a forged letter they have been afraid to use":"Feared the victim was about to expose the forged letter",
+ "Once caused an accident they never took responsibility for":"Feared the victim was about to expose the accident they never took responsibility for",
+ "Has been meeting someone in secret for months and lied about it tonight":"Feared the victim would tell everyone about the secret meetings",
+ "Promised the same favour to two different people tonight":"Feared the victim would expose the double promise before the evening ended",
+ "Is quietly deep in debt and has been borrowing against future income":"Feared the victim had learned of the debts and would tell everyone",
+ "Was cut out of a will and told no one":"Had never forgiven the victim for cutting them out of the will",
+ "Was cut out of a deal and told no one":"Had never forgiven the victim for cutting them out of the deal",
+ "Was cut out of a partnership and told no one":"Had never forgiven the victim for cutting them out of the partnership"};
 /* 22 evidence types — templates use {V}=victim {K}=killer {S}=linked suspect {L}=location {L2}=second location */
 const EVIDENCE_TYPES=[
- {type:"Torn Letter",killer:"A torn letter in {K}'s handwriting, found beside the body — the missing half matches paper stock from {K}'s own desk.",clear:"A torn letter in {S}'s hand, but the tear and ink are old — dated weeks before tonight.",desc:"A letter torn in anger, reassembled by investigators. One half is still missing."},
- {type:"Receipt",killer:"A receipt timed 20 minutes before the discovery, placing a purchase by {K} at {L2} — a place {K} claims never to have visited tonight.",clear:"A timestamped receipt proving {S} was at {L2}, across the grounds, at the exact time of the crime.",desc:"A creased paper receipt, its timestamp still legible."},
- {type:"Ticket Stub",killer:"A ticket stub bearing {K}'s seat number, found under the victim's chair — though {K} insists they never went near it.",clear:"A punched ticket stub showing {S} was admitted to {L2} before the crime and never left.",desc:"A single stub, torn at the perforation."},
- {type:"Diary Page",killer:"A page from the victim's diary: 'If anything happens to me, look first at {K}. We meet tonight to settle it.'",clear:"A diary page in which the victim writes warmly of {S} and records meeting them in company at the critical hour.",desc:"A loose diary page, folded twice, hidden inside a book."},
- {type:"Newspaper Clipping",killer:"A clipping about an old scandal involving {K}, annotated in the victim's hand: 'Ask {K} about this.'",clear:"A clipping that dates the feud involving {S} to years ago — and records that it was publicly settled.",desc:"A yellowed clipping, folded into a programme."},
- {type:"Guest Record",killer:"A register page showing a room booked under a false name — the handwriting matches {K}'s signature.",clear:"A register page signed by {S} at the front desk at the critical time, witnessed by staff.",desc:"A page copied from the official register."},
- {type:"Photograph",killer:"A photograph, half-burned, showing {K} at {L} earlier that evening — somewhere {K} denies being.",clear:"A group photograph, timestamped by the photographer's log, showing {S} smiling at {L2} at the critical hour.",desc:"A photograph with one corner singed."},
- {type:"Handwritten Note",killer:"An unsigned note in disguised handwriting — but the distinctive crossed 't' matches {K}'s writing exactly.",clear:"A note in {S}'s hand arranging to meet the victim tomorrow — written before tonight's events, in good faith.",desc:"A short note on plain card, unsigned."},
- {type:"Anonymous Message",killer:"An anonymous warning the victim received that morning. The phrasing repeats a favourite saying of {K}.",clear:"An anonymous message that threatened scandal, not harm — traced to a prank by a guest, unconnected to {S}.",desc:"Block capitals on a cut-out card."},
- {type:"Floor Plan",killer:"A plan of {L} marked with a route that avoids the staffed corridor — the pencil used matches the one in {K}'s pocket.",clear:"A marked plan showing the route {S} actually took, confirmed by two witnesses along it.",desc:"A folded plan with pencil markings."},
- {type:"Missing-Object Report",killer:"A report that a distinctive item belonging to {K} went missing from {L} tonight — the same kind of item found beside the victim.",clear:"A report of a missing item of {S}'s, later found exactly where {S} said it had been left.",desc:"A standard report form, filled in by staff."},
- {type:"Lab Card",killer:"A lab card: traces on the victim's glass match a substance kept under lock in a place only {K} had access to.",clear:"A lab card clearing the drink {S} served — it was tested and found completely ordinary.",desc:"A printed laboratory card with a reference number."},
- {type:"Key Record",killer:"The lock log for {L}: only two keys opened it that night — the victim's, at {KT1}, and one signed out to {K}, at {KT2}. The second key was never signed back in.",clear:"The lock log shows {S}'s key was never used after early evening — it hung on the board all night.",desc:"A printed access log with two highlighted lines."},
- {type:"Torn Glove",killer:"A torn glove of an unusual colour — fellow guests saw {K} wearing its pair in {L2} earlier in the evening, and {K} now owns only one.",clear:"A glove belonging to {S}, torn days ago and mended — the mending thread proves it is an old tear.",desc:"A single torn glove in a sealed evidence bag."},
- {type:"Appointment Card",killer:"The victim's appointment card: a private meeting with {K} at the critical hour, never mentioned by {K}.",clear:"An appointment card showing {S}'s meeting with the victim was scheduled for tomorrow, not tonight.",desc:"A small card from the victim's pocket diary."},
- {type:"Ledger Page",killer:"A ledger page where figures were altered tonight — the alteration benefits {K} alone.",clear:"A ledger page proving the money {S} handled tonight balances to the penny.",desc:"A ruled ledger page with one line re-written in fresh ink."},
- {type:"Broken Watch",killer:"A watch stopped at the critical hour, engraved with initials — a gift the victim once gave to {K}.",clear:"A stopped watch that at first seemed to fix the time — it had actually stopped the day before, clearing {S}'s timeline.",desc:"A watch with a cracked face, hands stopped."},
- {type:"Coded Message",killer:"A simple cipher note. Decoded, it names the meeting place — and only {K} used that cipher in their letters.",clear:"A coded party-game message written by {S} for a parlour game — innocent, and explained by three guests.",desc:"A slip of paper covered in neat cipher groups."},
- {type:"Matchbook",killer:"A matchbook from a place {K} claims never to have entered — found at {L} still warm in the ashtray.",clear:"A matchbook placing {S} at {L2} with company at the critical hour.",desc:"A matchbook with two matches struck."},
- {type:"Muddy Footprint Cast",killer:"A footprint cast from the wet ground outside {L}: a distinctive repaired sole — matching the shoes {K} is wearing.",clear:"Footprint casts at the scene are all accounted for by staff — none match {S}'s shoes.",desc:"A plaster cast in a labelled tray."},
- {type:"Phone Log",killer:"A call log: the victim's last call was to {K}, four minutes long, ending just before the critical hour — a call {K} never mentioned.",clear:"A call log showing {S} on a long call with an outside number across the whole critical window.",desc:"A printed call log with one line underlined."},
- {type:"Invitation",killer:"The victim's invitation, annotated by hand: 'Confront {K} tonight — end this.'",clear:"An invitation showing {S} was expected at {L2} all evening, and signed the guest book there.",desc:"A printed invitation with a handwritten note."}
+ {type:"Torn Letter",killer:"A torn letter in {K}'s handwriting, found beside the body — the missing half matches paper stock from {K}'s own desk.",clear:"A torn letter in {S}'s hand, but the tear and ink are old — dated weeks before tonight.",desc:"A letter torn in anger, reassembled by investigators. One half is still missing.",neutral:"A letter about an old family row, settled years ago and kept in a drawer. It has nothing to do with tonight."},
+ {type:"Receipt",killer:"A receipt timed 20 minutes before the discovery, placing a purchase by {K} at {L} — a place {K} claims never to have visited tonight.",clear:"A timestamped receipt proving {S} was at {L2}, across the grounds, at the exact time of the crime.",desc:"A creased paper receipt, its timestamp still legible.",neutral:"A receipt for two coffees and a slice of pie, stamped {NT1} — an ordinary purchase from early in the evening."},
+ {type:"Ticket Stub",killer:"A ticket stub bearing {K}'s seat number, found under the victim's chair — though {K} insists they never went near it.",clear:"A punched ticket stub showing {S} was admitted to {L2} before the crime and never left.",desc:"A single stub, torn at the perforation.",neutral:"A stub for a seat in the back row, punched at the door. The seat was occupied all evening by a guest with no part in this file."},
+ {type:"Diary Page",killer:"A page from the victim's diary: 'If anything happens to me, look first at {K}. We meet tonight to settle it.'",clear:"A diary page in which the victim writes warmly of {S} and records meeting them in company at the critical hour.",desc:"A loose diary page, folded twice, hidden inside a book.",neutral:"A diary page about the week's shopping list and a dentist appointment. Nothing in it touches tonight."},
+ {type:"Newspaper Clipping",killer:"A clipping about an old scandal involving {K}, annotated in the victim's hand: 'Ask {K} about this.'",clear:"A clipping that dates the feud involving {S} to years ago — and records that it was publicly settled.",desc:"A yellowed clipping, folded into a programme.",neutral:"A clipping about the town fete three summers ago, kept as a souvenir. It names no one in this file."},
+ {type:"Guest Record",killer:"A register page showing a room booked under a false name — the handwriting matches {K}'s signature.",clear:"A register page signed by {S} at the front desk at the critical time, witnessed by staff.",desc:"A page copied from the official register.",neutral:"A register page of arrivals, all signed in before the evening began. Every name on it is accounted for."},
+ {type:"Photograph",killer:"A photograph, half-burned, showing {K} at {L} earlier that evening — somewhere {K} denies being.",clear:"A group photograph, timestamped by the photographer's log, showing {S} smiling at {L2} at the critical hour.",desc:"A photograph with one corner singed.",neutral:"A photograph of the whole room laughing at a toast, taken early in the evening. Everyone in it is accounted for."},
+ {type:"Handwritten Note",killer:"An unsigned note in disguised handwriting — but the distinctive crossed 't' matches {K}'s writing exactly.",clear:"A note in {S}'s hand arranging to meet the victim tomorrow — written before tonight's events, in good faith.",desc:"A short note on plain card, unsigned.",neutral:"A note that reads: 'Save me a seat near the door — I will be late.' Written before the evening began, it means nothing more."},
+ {type:"Anonymous Message",killer:"An anonymous warning the victim received that morning. The phrasing repeats a favourite saying of {K}.",clear:"An anonymous message that threatened scandal, not harm — traced to a prank by a guest, unconnected to {S}.",desc:"Block capitals on a cut-out card.",neutral:"A card that reads: 'YOU ARE DOING A WONDERFUL JOB — KEEP GOING.' A well-wish, cut from a magazine and left on the table."},
+ {type:"Floor Plan",killer:"A plan of {L} marked with a route that avoids the staffed corridor — the pencil used matches the one in {K}'s pocket.",clear:"A marked plan showing the route {S} actually took, confirmed by two witnesses along it.",desc:"A folded plan with pencil markings.",neutral:"A plan marked with the seating for the evening and the way to the cloakroom. The markings are the host's own."},
+ {type:"Missing-Object Report",killer:"A report that a distinctive item belonging to {K} went missing from {L} tonight — the same kind of item found beside the victim.",clear:"A report of a missing item of {S}'s, later found exactly where {S} said it had been left.",desc:"A standard report form, filled in by staff.",neutral:"A report of a lost umbrella, found again in the cloakroom before the evening ended."},
+ {type:"Lab Card",killer:"A lab card: traces on the victim's glass match a substance kept under lock in a place only {K} had access to.",clear:"A lab card clearing the drink {S} served — it was tested and found completely ordinary.",desc:"A printed laboratory card with a reference number.",neutral:"A lab card for the victim's glass: tested and found completely ordinary — water, nothing more."},
+ {type:"Key Record",killer:"The lock log for {L}: only two keys opened it that night — the victim's, at {KT1}, and one signed out to {K}, at {KT2}. The second key was never signed back in.",clear:"The lock log shows {S}'s key was never used after early evening — it hung on the board all night.",desc:"A printed access log with two highlighted lines.",neutral:"Two highlighted lines: a staff key signed out at {NT1} and returned at {NT2}; a spare key that never left the board all evening."},
+ {type:"Torn Glove",killer:"A torn glove of an unusual colour — fellow guests saw {K} wearing its pair in {L2} earlier in the evening, and {K} now owns only one.",clear:"A glove belonging to {S}, torn days ago and mended — the mending thread proves it is an old tear.",desc:"A single torn glove in a sealed evidence bag.",neutral:"A glove torn on a fence weeks ago, kept in the lost-property box. The tear is old and the owner is unknown."},
+ {type:"Appointment Card",killer:"The victim's appointment card: a private meeting with {K} at the critical hour, never mentioned by {K}.",clear:"An appointment card showing {S}'s meeting with the victim was scheduled for tomorrow, not tonight.",desc:"A small card from the victim's pocket diary.",neutral:"An appointment card for a haircut next Tuesday, written in the victim's own hand. It was never kept."},
+ {type:"Ledger Page",killer:"A ledger page where figures were altered tonight — the alteration benefits {K} alone.",clear:"A ledger page proving the money {S} handled tonight balances to the penny.",desc:"A ruled ledger page with one line re-written in fresh ink.",neutral:"A ledger line corrected in fresh ink: a column of small change, mis-added and fixed before the evening began."},
+ {type:"Broken Watch",killer:"A watch stopped at the critical hour, engraved with initials — a gift the victim once gave to {K}.",clear:"A stopped watch that at first seemed to fix the time — it had actually stopped the day before, clearing {S}'s timeline.",desc:"A watch with a cracked face, hands stopped.",neutral:"A watch with a cracked face, stopped long ago at half past three. It has not run for weeks."},
+ {type:"Coded Message",killer:"A simple cipher note. Decoded, it names the meeting place — and only {K} used that cipher in their letters.",clear:"A coded party-game message written by {S} for a parlour game — innocent, and explained by three guests.",desc:"A slip of paper covered in neat cipher groups.",neutral:"A cipher that decodes to a party-game clue: 'THE CAKE IS IN THE KITCHEN.' Written for a game, not a crime."},
+ {type:"Matchbook",killer:"A matchbook from a place {K} claims never to have entered — found at {L} still warm in the ashtray.",clear:"A matchbook placing {S} at {L2} with company at the critical hour.",desc:"A matchbook with two matches struck.",neutral:"A matchbook from the corner shop, two matches struck to light the evening's candles. It belongs to the house, not a guest."},
+ {type:"Muddy Footprint Cast",killer:"A footprint cast from the wet ground outside {L}: a distinctive repaired sole — matching the shoes {K} is wearing.",clear:"Footprint casts at the scene are all accounted for by staff — none match {S}'s shoes.",desc:"A plaster cast in a labelled tray.",neutral:"A cast of a footprint by the back door, made hours before the evening began. It matches the gardener's boot, not a guest's shoe."},
+ {type:"Phone Log",killer:"A call log: the victim's last call was to {K}, four minutes long, ending just before the critical hour — a call {K} never mentioned.",clear:"A call log showing {S} on a long call with an outside number across the whole critical window.",desc:"A printed call log with one line underlined.",neutral:"One underlined line: a two-minute call at {NT1} to the taxi firm, booking a car for the end of the evening."},
+ {type:"Invitation",killer:"The victim's invitation, annotated by hand: 'Confront {K} tonight — end this.'",clear:"An invitation showing {S} was expected at {L2} all evening, and signed the guest book there.",desc:"A printed invitation with a handwritten note.",neutral:"An invitation with a handwritten note: 'Bring the good camera!' Written by the host to a friend, days before the evening."}
 ];
 const HERRING_TEMPLATES=[
- {type:"Stained Cuff",desc:"A cuff stained dark red, found near {L}.",text:"A dark red stain on {S}'s cuff looks damning at first glance.",explain:"The stain is wine from earlier in the evening — tested and confirmed harmless. {S} was embarrassed, not guilty."},
- {type:"Overheard Argument",desc:"Two guests overheard {S} arguing with the victim an hour before the discovery.",text:"Witnesses heard {S} say to the victim: 'You will regret this tonight.'",explain:"The argument was about a game. Harsh words, corroborated by both sides of the doorway — and {S} was in company from that moment on."},
- {type:"Hidden Keepsake",desc:"A keepsake of the victim's found hidden in {S}'s bag.",text:"{S} was hiding something of the victim's — and lied about it at first.",explain:"{S} hid the keepsake because it proved their secret (see dossier), not the crime. It was taken days earlier, long before tonight."},
- {type:"False Timesheet",desc:"A timesheet in {S}'s name with one entry altered.",text:"An altered entry made it look as if {S} had no alibi.",explain:"{S} altered the entry to hide their secret meeting, not the crime. Independent records place {S} at {L2} at the critical hour."}
+ {type:"Stained Cuff",desc:"A cuff stained dark red, found near {L}.",text:"A dark red stain on {S}'s cuff looks damning at first glance — but it smells of wine, and {S} was pouring drinks all evening.",explain:"The stain is wine from earlier in the evening — {S} was pouring drinks, and was embarrassed, not guilty."},
+ {type:"Overheard Argument",desc:"Two guests overheard {S} arguing with the victim an hour before the discovery.",text:"Witnesses heard {S} say to the victim: 'You will regret this tonight.' The argument was about a game of cards — harsh words over a lost hand, heard by guests on both sides of the doorway — and {S} stayed in company from that moment on.",explain:"The argument was about a game of cards. Harsh words, corroborated by both sides of the doorway — and {S} was in company from that moment on."},
+ {type:"Hidden Keepsake",desc:"A keepsake of the victim's found hidden in {S}'s bag.",text:"{S} was hiding something of the victim's — and lied about it at first. But the keepsake was taken days earlier, long before tonight, and {S} hid it only because it would expose a private secret that has nothing to do with the crime.",explain:"{S} hid the keepsake because it would expose a private secret that has nothing to do with the crime. It was taken days earlier, long before tonight."},
+ {type:"False Timesheet",desc:"A timesheet in {S}'s name with one entry altered.",text:"An altered entry made it look as if {S} had no alibi. The entry was changed to hide a secret meeting — the real record, and {S}'s companions at {L2}, cover the critical hour.",explain:"{S} altered the entry to hide their secret meeting, not the crime. Independent records place {S} at {L2} at the critical hour."}
 ];
 </script>
 
@@ -391,9 +411,9 @@ speakeasy:{label:"1920s Speakeasy",blurb:"Jazz, bootleg deals and a back-room se
   {occupation:"Cook",relationship:"Runs the kitchen; hears everything through the hatch"}],
  methods:[{place:null,text:"Struck once with a heavy brass candlestick; the body was seated upright to delay discovery"},{place:null,text:"A rare poison slipped into a private decanter; the glass was washed and replaced"},{place:"the cellar stairs",text:"Pushed from the cellar stairs in the dark; made to look like a drunken fall"},{place:"the main jazz hall",text:"A single shot from a small pistol fitted with a silencer, fired during the loudest chorus"}],
  evidenceFlavor:[
-  {type:"Bootleg Ledger",killer:"A page torn from the bootleg ledger — the handwriting of the altered figures matches {K}'s hand exactly.",clear:"The ledger shows {S}'s account settled in full, in the victim's own hand, that afternoon.",desc:"A ruled ledger with one page razored out."},
-  {type:"Cocktail Napkin Note",killer:"A cocktail napkin with a meeting time in {K}'s handwriting, found in the victim's pocket.",clear:"A napkin doodle in {S}'s hand — a song set-list, timed and witnessed by the band.",desc:"A napkin, soft with damp, folded small."},
-  {type:"Broken Record",killer:"A smashed record of the victim's signature song — and {K}'s cufflink in the grooves of the turntable.",clear:"A broken record that cracked during the afternoon rehearsal, in front of the whole band — clearing {S}.",desc:"Shellac shards in a paper sleeve."}],
+  {type:"Bootleg Ledger",killer:"A page torn from the bootleg ledger — the handwriting of the altered figures matches {K}'s hand exactly.",clear:"The ledger shows {S}'s account settled in full, in the victim's own hand, that afternoon.",desc:"A ruled ledger with one page razored out.",neutral:"A page of delivery notes, every line settled in full. The missing page was razored out years before tonight."},
+  {type:"Cocktail Napkin Note",killer:"A cocktail napkin with a meeting time in {K}'s handwriting, found in the victim's pocket.",clear:"A napkin doodle in {S}'s hand — a song set-list, timed and witnessed by the band.",desc:"A napkin, soft with damp, folded small.",neutral:"A napkin with a doodle of a saxophone and the words 'ENCORE, PLEASE!' A guest's souvenir from the first set."},
+  {type:"Broken Record",killer:"A smashed record of the victim's signature song — and {K}'s cufflink in the grooves of the turntable.",clear:"A broken record that cracked during the afternoon rehearsal, in front of the whole band — clearing {S}.",desc:"Shellac shards in a paper sleeve.",neutral:"Shards of a dance record, cracked when a waiter tripped during the afternoon rehearsal. The band played on without it."}],
  witnessRoles:["The cloakroom attendant","A cigarette girl","The drummer, between sets","A taxi driver waiting outside"],
  titleTemplates:["The Last Song at {Venue}","Murder in the Key of {V}","The {V} Silence","A Final Set for {V}"]},
 
@@ -424,9 +444,9 @@ mansion:{label:"Haunted Mansion",blurb:"A will, a storm, and a house that keeps 
   {occupation:"Parish vicar",relationship:"Old confidant of the victim"}],
  methods:[{place:"the library",text:"A heavy marble bookend, struck once; the library was then locked from the outside with a copied key"},{place:null,text:"A draught of sleeping powder far beyond any dose, stirred into a nightcap"},{place:"the tower stairs",text:"A fall from the tower stairs after the handrail was loosened in the dark"},{place:null,text:"Struck with a fire iron during the blackout, the scene staged to suggest a burglar"}],
  evidenceFlavor:[
-  {type:"Draft Will",killer:"A draft of the new will with one clause underlined — the clause that ruins {K}. It was hidden in {K}'s room.",clear:"A draft will showing {S} provided for generously — {S} gained nothing from the death.",desc:"A solicitor's draft, ribbon-tied, one page dog-eared."},
-  {type:"Séance Notes",killer:"Séance notes in which the 'spirit' spells out a warning — the handwriting under the table was {K}'s.",clear:"Séance notes proving {S} was at the table, both hands visible, at the critical hour.",desc:"A medium's notebook with shaky pencil script."},
-  {type:"Skeleton Key",killer:"A copied skeleton key, still bright from the file, found where {K} hid it.",clear:"A skeleton key long lost by {S} and found tonight in a drawer it could not have left.",desc:"A bright, newly-filed key on a black ribbon."}],
+  {type:"Draft Will",killer:"A draft of the new will with one clause underlined — the clause that ruins {K}. It was hidden in {K}'s room.",clear:"A draft will showing {S} provided for generously — {S} gained nothing from the death.",desc:"A solicitor's draft, ribbon-tied, one page dog-eared.",neutral:"A draft will that leaves everything to a cats' home, unsigned and undated. The solicitor confirms it was never executed."},
+  {type:"Séance Notes",killer:"Séance notes in which the 'spirit' spells out a warning — the handwriting under the table was {K}'s.",clear:"Séance notes proving {S} was at the table, both hands visible, at the critical hour.",desc:"A medium's notebook with shaky pencil script.",neutral:"Notes from a séance held last winter, naming no one present tonight. The 'spirit' spelled out a recipe for seed cake."},
+  {type:"Skeleton Key",killer:"A copied skeleton key, still bright from the file, found where {K} hid it.",clear:"A skeleton key long lost by {S} and found tonight in a drawer it could not have left.",desc:"A bright, newly-filed key on a black ribbon.",neutral:"A key filed bright for the cellar door, cut last spring and never used since. It opens nothing in this house tonight."}],
  witnessRoles:["The parlour maid","The night watchman","A guest who could not sleep","The medium's assistant"],
  titleTemplates:["The {V} Inheritance","Death at {Venue} Hall","The Locked Library at {Venue}","What the Storm Brought to {Venue}"]},
 
@@ -457,9 +477,9 @@ train:{label:"The Last Train",blurb:"A luxury night express, a locked compartmen
   {occupation:"Porter",relationship:"Carried the victim's cases — one was unusually heavy"}],
  methods:[{place:"Compartment 7",text:"Strangled with a silk cord in a locked compartment; the window latch was rigged from outside"},{place:"the dining car",text:"A sleeping draught doubled in strength, slipped into a nightcap in the dining car"},{place:"the corridor by the luggage van",text:"Pushed from the corridor into the luggage van as the train crossed the viaduct"},{place:"the corridor by the luggage van",text:"Struck with a heavy brass luggage key in the darkened corridor during a tunnel"},{place:null,text:"Garrotted with a length of picture wire in a quiet moment; the body was arranged in a seat as if asleep"}],
  evidenceFlavor:[
-  {type:"Passenger Manifest",killer:"The manifest shows a berth booked and paid for in cash under a false name — the signature is {K}'s.",clear:"The manifest and conductor's punch-marks place {S} in the dining car for the whole critical half-hour.",desc:"The official manifest, annotated in pencil."},
-  {type:"Luggage Tag",killer:"A luggage tag in {K}'s handwriting tied to the victim's case — a case {K} denies ever touching.",clear:"A luggage tag proving {S}'s cases never left the rack above their own berth.",desc:"A card tag on a string, ink smudged by rain."},
-  {type:"Telegram Draft",killer:"A telegram draft in the victim's hand: 'ARRIVING WITH PROOF ABOUT {K}.'",clear:"A telegram draft showing the victim planned to meet {S} openly tomorrow — no quarrel between them.",desc:"A pencilled draft on a telegraph form."}],
+  {type:"Passenger Manifest",killer:"The manifest shows a berth booked and paid for in cash under a false name — the signature is {K}'s.",clear:"The manifest and conductor's punch-marks place {S} in the dining car for the whole critical half-hour.",desc:"The official manifest, annotated in pencil.",neutral:"A manifest with pencil ticks beside every name that boarded. Every tick is accounted for by the conductor."},
+  {type:"Luggage Tag",killer:"A luggage tag in {K}'s handwriting tied to the victim's case — a case {K} denies ever touching.",clear:"A luggage tag proving {S}'s cases never left the rack above their own berth.",desc:"A card tag on a string, ink smudged by rain.",neutral:"A tag reading 'H. ALDERSON — BERTH 4', smudged by rain on the platform. Its owner collected the case at breakfast."},
+  {type:"Telegram Draft",killer:"A telegram draft in the victim's hand: 'ARRIVING WITH PROOF ABOUT {K}.'",clear:"A telegram draft showing the victim planned to meet {S} openly tomorrow — no quarrel between them.",desc:"A pencilled draft on a telegraph form.",neutral:"A draft that reads: 'ARRIVING TUESDAY. SAVE THE GOOD ROOM.' Sent days ago, it concerns a visit that never happened."}],
  witnessRoles:["The night porter","A passenger who heard the corridor bell","The dining-car pianist","A border guard who boarded at the last stop"],
  titleTemplates:["Death on the {Venue}","The {V} Express","Murder in Compartment Seven","The Last Stop for {V}"]},
 
@@ -490,9 +510,9 @@ manor:{label:"English Country Manor",blurb:"A garden party, an inheritance, and 
   {occupation:"Old school friend",relationship:"Guest of honour; owed the victim money"}],
  methods:[{place:"the library terrace",text:"A rare plant poison stirred into a glass of homemade lemonade, served on the terrace"},{place:"the summer house",text:"Struck with a croquet mallet beside the summer house; the mallet was washed and replaced"},{place:"the boathouse path",text:"A fall from the boathouse steps after a rope was cut in the dusk"},{place:"the rose garden",text:"Pushed into the ornamental pond in the rose garden as the fireworks began, held under by a garden fork's handle — the scene dried and tidied"},{place:"the billiard room",text:"A single blow from the heavy brass cue rest beside the billiard table; the cues were racked again afterwards as if nothing had happened"},{place:null,text:"Struck down with a heavy brass candlestick from the hall table; the candlestick was wiped and set back in its place"}],
  evidenceFlavor:[
-  {type:"Garden Party Programme",killer:"The victim's programme, annotated: 'Speak to {K} alone — boathouse, nine o'clock.' {K} denies any meeting.",clear:"A programme signed by {S} as a tennis umpire for the full critical hour, countersigned by four players.",desc:"A printed programme with pencil notes."},
-  {type:"Seed Packet",killer:"An empty seed packet of a poisonous plant, found in the potting shed — bought last week by {K}.",clear:"A seed packet of the same plant, bought openly by {S} for the school garden and recorded in the parish magazine.",desc:"A paper packet with a Latin name."},
-  {type:"Love Letter (Unsigned)",killer:"An unsigned letter in a hand the victim recognised — the paper matches a pad in {K}'s writing desk.",clear:"An unsigned letter that first pointed at {S}, until the postmark proved it a year old.",desc:"Two pages, no signature, faint perfume."}],
+  {type:"Garden Party Programme",killer:"The victim's programme, annotated: 'Speak to {K} alone — boathouse, nine o'clock.' {K} denies any meeting.",clear:"A programme signed by {S} as a tennis umpire for the full critical hour, countersigned by four players.",desc:"A printed programme with pencil notes.",neutral:"A programme with pencil notes on the tennis draw and the time of the fireworks. The notes are the hostess's own."},
+  {type:"Seed Packet",killer:"An empty seed packet of a poisonous plant, found in the potting shed — bought last week by {K}.",clear:"A seed packet of the same plant, bought openly by {S} for the school garden and recorded in the parish magazine.",desc:"A paper packet with a Latin name.",neutral:"A packet of sweet-pea seed, bought for the school garden and never opened. The Latin name is printed, not written."},
+  {type:"Love Letter (Unsigned)",killer:"An unsigned letter in a hand the victim recognised — the paper matches a pad in {K}'s writing desk.",clear:"An unsigned letter that first pointed at {S}, until the postmark proved it a year old.",desc:"Two pages, no signature, faint perfume.",neutral:"Two pages of verse about a summer long past, in a hand nobody recognises. The postmark is a year old."}],
  witnessRoles:["The tennis umpire","A parlour maid serving tea","The village constable, off duty","A child sent to fetch a shawl"],
  titleTemplates:["Murder at the {Venue} Garden Party","The {V} Announcement","Death Among the Roses","A Wrenfield {V}"]},
 
@@ -523,9 +543,9 @@ neon:{label:"1980s Neon Crime",blurb:"A retro arcade, big hair and a high-score 
   {occupation:"Older sister of a regular",relationship:"Was only here to drive her brother home",g:"F"}],
  methods:[{place:"the back storage room",text:"A rigged power cable in the storage room, arranged to look like a freak accident"},{place:"the roller rink",text:"Struck with a heavy skate-repair wrench behind the rink; the scene wiped down with a rink towel"},{place:"the snack bar",text:"A drink spiked at the snack bar with a double dose of someone else's prescription sedative"},{place:"the DJ booth",text:"Pushed from the DJ booth ladder during the blackout skate, staged as a fall in the dark"},{place:null,text:"Struck once with a heavy metal token tray; the tray was washed and returned to the booth"}],
  evidenceFlavor:[
-  {type:"Polaroid Photo",killer:"A Polaroid, still developing when found, showing {K}'s jacket at {L} minutes before the discovery.",clear:"A Polaroid of the crowd at the critical moment — {S} is in it, mid-laugh, at {L2}.",desc:"A Polaroid with one face turned away."},
-  {type:"Cassette Tape",killer:"A cassette of the night's announcements — one segment was recorded over, and the voice underneath is {K}'s.",clear:"A cassette that proves {S} was on the microphone, live, at the critical moment.",desc:"A C60 cassette with a hand-written label."},
-  {type:"Yearbook Page",killer:"A yearbook page with the victim's photo circled in marker — the same marker found in {K}'s locker.",clear:"A yearbook page that first suggested {S} — until the handwriting was matched to a years-old prank.",desc:"A glossy page torn along the perforation."}],
+  {type:"Polaroid Photo",killer:"A Polaroid, still developing when found, showing {K}'s jacket at {L} minutes before the discovery.",clear:"A Polaroid of the crowd at the critical moment — {S} is in it, mid-laugh, at {L2}.",desc:"A Polaroid with one face turned away.",neutral:"A Polaroid of the prize wall, one face turned away from the flash. Everyone in it is accounted for."},
+  {type:"Cassette Tape",killer:"A cassette of the night's announcements — one segment was recorded over, and the voice underneath is {K}'s.",clear:"A cassette that proves {S} was on the microphone, live, at the critical moment.",desc:"A C60 cassette with a hand-written label.",neutral:"A cassette labelled 'PRIZE DRAW — DO NOT ERASE', holding the evening's announcements and nothing else."},
+  {type:"Yearbook Page",killer:"A yearbook page with the victim's photo circled in marker — the same marker found in {K}'s locker.",clear:"A yearbook page that first suggested {S} — until the handwriting was matched to a years-old prank.",desc:"A glossy page torn along the perforation.",neutral:"A yearbook page of the championship team, torn out as a keepsake years ago. It names no one in this file."}],
  witnessRoles:["The token-booth clerk","A kid who snuck back in","The parking-lot security guard","A roller-rink regular"],
  titleTemplates:["High Score for {V}","Murder at the {Venue}","The Final Game of {V}","Neon Nights, Last Rites"]},
 
@@ -554,11 +574,11 @@ hollywood:{label:"Hollywood Golden Age",blurb:"A film studio, a star, and a care
   {occupation:"Wardrobe assistant",relationship:"Handles every costume and prop on Stage 6"},
   {occupation:"Studio accountant",relationship:"Found irregularities in the victim's accounts this week"},
   {occupation:"Night watchman",relationship:"Patrols the backlot; signs the gate log"}],
- methods:[{place:"Stage 6",text:"A prop weapon swapped for a real one during the final scene's rehearsal"},{place:"the screening room",text:"A sleeping draught in the star's thermos, far beyond a safe dose, timed for the screening"},{place:"Stage 6",text:"Struck with a heavy studio light stand in the darkened Stage 6; the scene dressed as an accident"},{place:"the backlot street set",text:"A fall from the backlot scaffolding after a safety rope was cut"},{place:null,text:"A sleeping draught in a thermos of studio coffee, far beyond a safe dose, timed to strike during the evening rushes"}],
+ methods:[{place:"Stage 6",text:"A prop weapon swapped for a real one during the final scene's rehearsal"},{place:"the screening room",text:"A sleeping draught in the star's thermos, far beyond a safe dose, timed for the screening",evidence:{type:"Recovered Thermos",killer:"A thermos found at {L}. The lab found traces of a sleeping draught inside — and {K}'s fingerprints are on the outside.",desc:"A dented thermos in a sealed evidence bag."}},{place:"Stage 6",text:"Struck with a heavy studio light stand in the darkened Stage 6; the scene dressed as an accident"},{place:"the backlot street set",text:"A fall from the backlot scaffolding after a safety rope was cut"},{place:null,text:"A sleeping draught in a thermos of studio coffee, far beyond a safe dose, timed to strike during the evening rushes",evidence:{type:"Recovered Thermos",killer:"A thermos found at {L}. The lab found traces of a sleeping draught inside — and {K}'s fingerprints are on the outside.",desc:"A dented thermos in a sealed evidence bag."}}],
  evidenceFlavor:[
-  {type:"Film Reel (Unlabelled)",killer:"An unlabelled reel showing {K} on the set at an hour {K} swears they were across the lot.",clear:"A reel of rushes proving {S} was on camera, in costume, at the critical time.",desc:"A reel in a plain can, smelling of vinegar."},
-  {type:"Fan Letter",killer:"A fan letter in a too-familiar hand — the handwriting is {K}'s, practising a signature.",clear:"A fan letter that seemed to threaten {S}'s rival — traced to an over-eager fan club secretary.",desc:"Pink paper, violet ink, no return address."},
-  {type:"Call Sheet",killer:"The night's call sheet, altered in pencil to move {K}'s call time — the alteration is in {K}'s hand.",clear:"A call sheet confirming {S} was called to Stage 3, across the lot, for the whole evening.",desc:"A mimeographed sheet with one line re-written."}],
+  {type:"Film Reel (Unlabelled)",killer:"An unlabelled reel showing {K} on the set at an hour {K} swears they were across the lot.",clear:"A reel of rushes proving {S} was on camera, in costume, at the critical time.",desc:"A reel in a plain can, smelling of vinegar.",neutral:"A reel of test footage — a camera check on an empty stage, dated last month. Nothing on it concerns tonight."},
+  {type:"Fan Letter",killer:"A fan letter in a too-familiar hand — the handwriting is {K}'s, practising a signature.",clear:"A fan letter that seemed to threaten {S}'s rival — traced to an over-eager fan club secretary.",desc:"Pink paper, violet ink, no return address.",neutral:"A letter that reads: 'YOU ARE MY FAVOURITE — PLEASE NEVER STOP.' Fan mail, posted weeks ago by an unknown admirer."},
+  {type:"Call Sheet",killer:"The night's call sheet, altered in pencil to move {K}'s call time — the alteration is in {K}'s hand.",clear:"A call sheet confirming {S} was called to Stage 3, across the lot, for the whole evening.",desc:"A mimeographed sheet with one line re-written.",neutral:"A call sheet with one line re-written: a scene moved from Stage 3 to Stage 6, days before shooting. The change is the director's own."}],
  witnessRoles:["The clapper loader","A wardrobe seamstress","The studio gate guard","An extra waiting for a night scene"],
  titleTemplates:["The Final Scene of {V}","Murder at {Venue}","The {V} Close-Up","No Retakes for {V}"]},
 
@@ -589,22 +609,22 @@ cruise:{label:"Luxury Cruise Ship",blurb:"A captain's gala, locked cabins and de
   {occupation:"Stowaway (discovered)",relationship:"Found hiding near the boat deck this morning"}],
  methods:[{place:"the boat deck",text:"A fall from the boat deck in the small hours, staged to look like a lone midnight stroll"},{place:null,text:"A double dose of heart medicine in a nightcap, delivered to the wrong — or right — cabin"},{place:"the purser's office",text:"Struck with a brass ship's lantern in the purser's office; the log book page for the hour removed"},{place:null,text:"A locked cabin, a scarf, and a chair tipped to suggest despair — arranged by someone with a master key"}],
  evidenceFlavor:[
-  {type:"Passenger List (Annotated)",killer:"The purser's list with one name circled — in ink matching the pen in {K}'s cabin.",clear:"The annotated list shows {S} booked under their own name and dining at the captain's table all evening.",desc:"A typed list with one pencilled circle."},
-  {type:"Cabin Key Log",killer:"The master-key log: signed out at the critical hour by {K}, who claims to have been asleep.",clear:"The key log shows {S}'s cabin key returned to the board before dinner and never taken again.",desc:"A ruled log book, one line blotted."},
-  {type:"Ship's Bell Schedule",killer:"A corrected bell schedule proving the 'midnight' sound witnesses heard was rung early — by arrangement with {K}.",clear:"The bell schedule confirms {S} was leading the gala toast at the critical moment, seen by sixty guests.",desc:"A printed schedule with a correction in ink."}],
+  {type:"Passenger List (Annotated)",killer:"The purser's list with one name circled — in ink matching the pen in {K}'s cabin.",clear:"The annotated list shows {S} booked under their own name and dining at the captain's table all evening.",desc:"A typed list with one pencilled circle.",neutral:"A list with one name circled in pencil: a passenger who asked for a vegetarian dinner. The request was filled."},
+  {type:"Cabin Key Log",killer:"The master-key log: signed out at the critical hour by {K}, who claims to have been asleep.",clear:"The key log shows {S}'s cabin key returned to the board before dinner and never taken again.",desc:"A ruled log book, one line blotted.",neutral:"A log line blotted by a spilled inkwell: a key returned at {NT1} and never taken again all evening."},
+  {type:"Ship's Bell Schedule",killer:"A corrected bell schedule proving the 'midnight' sound witnesses heard was rung early — by arrangement with {K}.",clear:"The bell schedule confirms {S} was leading the gala toast at the critical moment, seen by sixty guests.",desc:"A printed schedule with a correction in ink.",neutral:"A schedule corrected in ink: the gala toast moved from eight to half past eight. Every guest heard the bell."}],
  witnessRoles:["The night steward","A passenger with insomnia","The lookout on the late watch","A stewardess delivering a telegram"],
  titleTemplates:["Death Aboard the {Venue}","The {V} Gala","Murder on the Night Tide","The Last Night of {V}"]},
 
 coldcase:{label:"Modern Cold Case",blurb:"A reopened file, new eyes on an old crime",palette:{bg:"#1a1a1d",paper:"#e8dcc4",accent:"#9e1b1b",accent2:"#c5a059",ink:"#241f18"},
- setting:"The reopened Hartley file — a small-town case, fifteen years cold",dateStr:"Case reopened: March 2024 (original crime: October 2009)",
+ setting:"The high-school reunion in the old gymnasium",dateStr:"Case reopened: March 2024 (original crime: October 2009)",
  locations:["the victim's old apartment","the diner on Route 9","the high-school parking lot","the quarry road","the evidence room","the victim's sister's porch"],
  victims:[
-  {name:"Daniel Hartley",role:"High-school teacher, missing since 2009",profile:"Vanished after a Friday game in 2009. His car was found at the quarry; he never was. The file was reopened when new evidence surfaced."},
-  {name:"Sarah Lindqvist",role:"Diner waitress, case of 2011",profile:"The last person to serve half the town that night. Her case file was sealed after a suspect 'passed' a polygraph that was later discredited."},
-  {name:"Marcus Webb",role:"Garage owner, case of 2008",profile:"Found in his own garage in 2008. The original investigation named a suspect it could never charge."},
-  {name:"Elena Ruiz",role:"Pharmacy technician, case of 2013",profile:"Her disappearance was ruled a walk-away — until her bag surfaced in a storm drain across town last spring."},
-  {name:"Tommy Kowalski Jr.",role:"Delivery driver, case of 2015",profile:"His van completed its route that night. He did not. GPS data was never pulled — until now."},
-  {name:"Grace Adeyemi",role:"School nurse, case of 2010",profile:"Signed out at 4 p.m. and never arrived home. A new witness has finally agreed to talk."}],
+  {name:"Daniel Hartley",role:"High-school teacher",profile:"Vanished after a Friday game. His car was found abandoned; he never was. The file was reopened when new evidence surfaced."},
+  {name:"Sarah Lindqvist",role:"Diner waitress",profile:"The last person to serve half the town that night. Her case file was sealed after a suspect 'passed' a polygraph that was later discredited."},
+  {name:"Marcus Webb",role:"Garage owner",profile:"Ran the town garage for twenty years. The original investigation named a suspect it could never charge."},
+  {name:"Elena Ruiz",role:"Pharmacy technician",profile:"Her disappearance was ruled a walk-away — until her bag surfaced in a storm drain across town."},
+  {name:"Tommy Kowalski Jr.",role:"Delivery driver",profile:"His van completed its route that night. He did not. GPS data was never pulled — until now."},
+  {name:"Grace Adeyemi",role:"School nurse",profile:"Signed out at 4 p.m. and never arrived home. A new witness has finally agreed to talk."}],
  namesM:["James Hartley","Robert Lindqvist","David Webb","Michael Ruiz","Steven Adeyemi","Kevin Marsh","Brian Ellery","Chris Novak","Andrew Feld","Jason Pryor"],
  namesF:["Karen Hartley","Laura Webb","Jessica Ruiz","Michelle Adeyemi","Nicole Marsh","Amanda Ellery","Sarah Novak","Emily Feld","Rachel Pryor","Heather Lindqvist"],
  roles:[
@@ -620,11 +640,11 @@ coldcase:{label:"Modern Cold Case",blurb:"A reopened file, new eyes on an old cr
   {occupation:"Tow-truck driver",relationship:"Moved the victim's car before police arrived"},
   {occupation:"New witness",relationship:"Stayed silent for years out of fear"},
   {occupation:"True-crime podcaster",relationship:"Brought the new evidence to the police"}],
- methods:[{place:"the quarry road",text:"The new file concludes the victim was struck with a tire iron at the quarry road and the scene at the car was staged"},{place:null,text:"A sedative in a thermos of coffee, then a staged single-car 'accident' that never happened"},{place:"the high-school parking lot",text:"The victim was met at the parking lot by someone they trusted, and driven away in their own car"},{place:"the victim's old apartment",text:"A fall at the old apartment, staged as a burglary — the 'stolen' items were hidden, not taken"}],
+ methods:[{place:"the quarry road",text:"The new file concludes the victim was struck with a tire iron at the quarry road and the scene at the car was staged"},{place:"the diner on Route 9",text:"A sedative slipped into the victim's coffee at the diner; the cup was washed, but the thermos was left behind under the table.",evidence:{type:"Recovered Thermos",killer:"A thermos found at {L}, under the victim's table. The lab found traces of a sedative inside — and {K}'s fingerprints are on the outside.",desc:"A dented thermos in a sealed evidence bag."}},{place:null,text:"The new file concludes the victim was killed where the body was found, by someone they trusted — the scene was tidied to look untouched."},{place:"the high-school parking lot",text:"The victim was met at the parking lot by someone they trusted, and driven away in their own car"},{place:"the victim's old apartment",text:"A fall at the old apartment, staged as a burglary — the 'stolen' items were hidden, not taken"}],
  evidenceFlavor:[
-  {type:"Re-Tested DNA Swab (Summary)",killer:"A re-tested swab from the original evidence: the profile matches {K} — a person never swabbed in the original investigation.",clear:"Re-testing finally excludes {S}, whose sample sat untested in the file for fifteen years.",desc:"A modern lab summary stapled to a 2009 evidence card."},
-  {type:"Recovered Phone Records",killer:"Recovered carrier records: a deleted call from the victim's phone to {K} at the critical hour.",clear:"Recovered records show {S}'s phone pinging a tower across town for the whole critical window.",desc:"A printout from the carrier, highlighted."},
-  {type:"Storm-Drain Find",killer:"An item recovered from a storm drain: engraved with initials, a gift from the victim to {K} — discarded within a day of the crime.",clear:"The storm-drain find washes out the old theory against {S}: the item predates the crime by years.",desc:"A water-stained evidence photo and bag."}],
+  {type:"Re-Tested DNA Swab (Summary)",killer:"A re-tested swab from the original evidence: the profile matches {K} — a person never swabbed in the original investigation.",clear:"Re-testing finally excludes {S}, whose sample sat untested in the file for fifteen years.",desc:"A modern lab summary stapled to a 2009 evidence card.",neutral:"A lab summary for a swab that matched no one on file: 'NO MATCH — PROFILE RETAINED.' The sample was never any suspect's."},
+  {type:"Recovered Phone Records",killer:"Recovered carrier records: a deleted call from the victim's phone to {K} at the critical hour.",clear:"Recovered records show {S}'s phone pinging a tower across town for the whole critical window.",desc:"A printout from the carrier, highlighted.",neutral:"A printout with one highlighted line: a call at {NT1} to the pizza parlour, ordering for the night shift. It concerns no one in this file."},
+  {type:"Storm-Drain Find",killer:"An item recovered from a storm drain: engraved with initials, a gift from the victim to {K} — discarded within a day of the crime.",clear:"The storm-drain find washes out the old theory against {S}: the item predates the crime by years.",desc:"A water-stained evidence photo and bag.",neutral:"A photo of a rusted key, found in a storm drain years after the crime. The key fits no lock in this file."}],
  witnessRoles:["A retired patrol officer","The victim's neighbour, then and now","A former student, now grown","The original 911 caller"],
  titleTemplates:["The {V} File: Reopened","Cold Trail: {V}","Fifteen Years for {V}","The {V} Evidence Room"]}
 };
@@ -678,16 +698,23 @@ function generateCase(opts){
     scene (pond, cellar stairs, DJ booth…) is never used — the answer key
     can no longer contradict the timeline, discovery and reveal script. */
  const mSpec=th.methods.filter(m=>m.place===crimePlace),mGen=th.methods.filter(m=>!m.place);
- const methodText=(mSpec.length&&r()<0.8)?pick(r,mSpec).text:pick(r,mGen.length?mGen:mSpec).text;
+ /* round 5: a method may carry its own evidence (coldcase thermos). When
+    chosen, that item is forced in as a killer clue, so the answer key's
+    method is always established by player-facing evidence. */
+ const methodObj=(mSpec.length&&r()<0.8)?pick(r,mSpec):pick(r,mGen.length?mGen:mSpec);
+ const methodText=methodObj.text;
  const c={id:uid("case"),caseNo:String(101+Math.floor(r()*880)),title:"",themeKey:opts.theme,themeLabel:th.label,
   setting:th.setting,dateStr:th.dateStr,tone:opts.tone,format:opts.format,difficulty:diff.key,diffLabel:diff.label,
-  players:diff.players,playTime:diff.playTime,victim,method:methodText,killerIndex:Math.floor(r()*suspects.length),
+  players:diff.players,playTime:diff.playTime,victim,method:methodText,methodEvidence:methodObj.evidence||null,killerIndex:Math.floor(r()*suspects.length),
   suspects,evidence:[],witnesses:[],timeline:[],hints:[],coverStyle:"vintage",coverPhoto:"",shopName:"",crimeTime:21*60+40,
   crimePlace:crimePlace,altPlace:locs[1],seed:opts.seed||1};
  c.title=opts.title&&opts.title.trim()?opts.title.trim():makeTitle(r,th,victim);
  buildStoryFields(c,r);return c}
 function buildStoryFields(c,r){
  const th=THEMES[c.themeKey],K=c.suspects[c.killerIndex],ct=c.crimeTime;
+ /* round 5: the killer's motive follows from their secret (KILLER_MOTIVE_LINKS)
+    — the answer key never prints a vague motive the secret does not explain */
+ if(KILLER_MOTIVE_LINKS[K.secret])K.motive=KILLER_MOTIVE_LINKS[K.secret];
  const others=c.suspects.map((s,i)=>i).filter(i=>i!==c.killerIndex);
  const corrob=i=>{const o=others.filter(x=>x!==i);return o.length?c.suspects[pick(r,o)].name:pick(r,th.witnessRoles)};
  /* alibis */
@@ -695,7 +722,11 @@ function buildStoryFields(c,r){
    s.alibi="I was at "+c.altPlace+" for the whole of the critical half-hour, alone, getting some air.";
    s.alibiNote="FALSE — no one confirms this, and the timeline leaves "+s.name.split(" ")[0]+" unaccounted for between "+fmtTime(ct-15)+" and "+fmtTime(ct+15)+".";}
   else{s.alibiTrue=true;const w=corrob(i);
-   s.alibi="Was at "+c.altPlace+" from "+fmtTime(ct-25)+" until after the discovery — confirmed by "+w+".";
+   /* round 5: the verified interval starts when THIS suspect was first
+      confirmed — the same staggered time the timeline prints — so dossier
+      and timeline agree exactly instead of every dossier claiming 9:15 */
+   s.alibiFrom=fmtTime(ct-25+((others.indexOf(i)%3)*5));
+   s.alibi="Was at "+c.altPlace+" from "+s.alibiFrom+" until after the discovery — confirmed by "+w+".";
    s.alibiNote="TRUE — independently confirmed."}});
  /* shareable clues — dealt from a shuffled deck (reshuffled when spent) so a
     case never repeats the same line about the same person twice */
@@ -715,7 +746,7 @@ function buildStoryFields(c,r){
  const tl=[];const D=(mins,event,who,tag)=>tl.push({time:fmtTime(mins),mins,event,who:who||"",tag:tag||"scene"});
  D(ct-160,"The gathering begins at "+c.setting+". "+c.victim.name+" arrives in good spirits and greets the guests.",c.victim.name);
  D(ct-115,c.victim.name+" is overheard in a heated exchange with "+c.suspects[others[0]].name+" — harsh words, quickly hushed up.",c.suspects[others[0]].name);
- others.forEach((i,k)=>{D(ct-25+((k%3)*5),c.suspects[i].name+" is placed at "+c.altPlace+" by fellow guests — the start of a confirmed alibi window.",c.suspects[i].name,"alibi")});
+ others.forEach((i,k)=>{D(ct-25+((k%3)*5),c.suspects[i].name+" is placed at "+c.altPlace+" by fellow guests — confirmed from "+fmtTime(ct-25+((k%3)*5))+" until after the discovery.",c.suspects[i].name,"alibi")});
  D(ct-15,K.name+" slips away from the main gathering. No guest can place them anywhere for the next thirty minutes.",K.name,"gap");
  D(ct-5,c.victim.name+" is last seen alive, heading toward "+c.crimePlace+".",c.victim.name);
  D(ct,"THE CRITICAL HOUR — the crime is committed at "+c.crimePlace+". Estimated time from the medical examination.","",  "crime");
@@ -731,7 +762,7 @@ function buildStoryFields(c,r){
     potting shed…), that place wins over the default recovery location. */
  const foundFor=(filledText,fallback)=>{if(/found beside the (body|victim)|found under the victim|victim's (pocket|chair)/.test(filledText)||filledText.includes("found at "+c.crimePlace))return c.crimePlace;
   const m=filledText.match(/found in (the [a-z' ]+?)[,.;—]/);return m?m[1].trim():fallback};
- for(let k=0;k<2;k++){const t=take();const kt=fill(t.killer,c,{"{KT1}":fmtTime(ct-4),"{KT2}":fmtTime(ct-2)});evs.push({type:t.type,title:t.type+" — "+(k===0?"found at the scene":"the second lead"),desc:fill(t.desc,c),
+ for(let k=0;k<2;k++){const t=(k===0&&c.methodEvidence)?c.methodEvidence:take();const kt=fill(t.killer,c,{"{KT1}":fmtTime(ct-4),"{KT2}":fmtTime(ct-2)});evs.push({type:t.type,title:t.type+" — "+(k===0?"found at the scene":"the second lead"),desc:fill(t.desc,c),
    text:kt,found:foundFor(kt,k===0?c.crimePlace:c.altPlace),linked:K.name,kind:"killer",target:c.killerIndex,contradictsAlibi:k===1,
    reveals:"A strong lead. Two items like this, together, are hard to explain away.",revealsHost:"Points directly at "+K.name+(k===1?" and breaks their alibi.":"."),explain:""})}
  others.forEach(i=>{const t=take();const s=c.suspects[i];evs.push({type:t.type,title:t.type+" — the "+s.name.split(" ").pop()+" record",desc:fill(t.desc,c,{"{S}":s.name}),
@@ -741,7 +772,10 @@ function buildStoryFields(c,r){
    evs.push({type:t.type,title:t.type+" — handle with care",desc:fill(t.desc,c,{"{S}":s.name}),text:fill(t.text,c,{"{S}":s.name}),found:c.crimePlace,linked:s.name,
    kind:"herring",target:i,contradictsAlibi:false,reveals:"Looks bad for "+s.name+" — perhaps too bad.",revealsHost:"RED HERRING aimed at "+s.name+".",explain:fill(t.explain,c,{"{S}":s.name})})});
  for(let k=0;k<2;k++){const t=take();evs.push({type:t.type,title:t.type+" — background",desc:fill(t.desc,c),
-   text:"Recovered during the search of "+c.crimePlace+". It belongs to the ordinary clutter of the evening and is logged for completeness.",
+   /* round 5: a neutral item shows the content its description promises
+      (log lines, a message, a result) — the generic clutter line left
+      cards describing evidence that was never supplied */
+   text:fill(t.neutral||"Recovered during the search of "+c.crimePlace+". It belongs to the ordinary clutter of the evening and is logged for completeness.",c,{"{NT1}":fmtTime(ct-120),"{NT2}":fmtTime(ct-90)}),
    found:c.crimePlace,linked:"—",kind:"neutral",target:null,contradictsAlibi:false,reveals:"Background colour — completes the picture of the evening.",revealsHost:"Neutral. Eliminates nobody.",explain:""})}
  c.evidence=shuffle(r,evs).map((e,i)=>({id:"EX-"+String(i+1).padStart(2,"0"),...e}));
  /* witnesses */
@@ -771,6 +805,10 @@ function buildStoryFields(c,r){
   inconsistency:"None — but the argument makes "+c.suspects[others[0]].name+" look worse than the facts warrant.",
   concealed:"Owes the victim money and hoped the argument would stay private.",
   explains:"The argument was real but concerned the secret in "+c.suspects[others[0]].name+"'s dossier — not the crime."});
+ /* round 5: a witness whose role is the 911 caller is timestamped by the
+    CALL, not the sighting — the call comes after the discovery, never
+    before the crime; the sighting itself stays in the statement text */
+ ws.forEach(w=>{if(/911/.test(w.role)){w.time=fmtTime(ct+27);w.seen+=" I called 911 the moment the alarm was raised."}});
  c.witnesses=ws;
  /* hints */
  const kEv=c.evidence.filter(e=>e.kind==="killer");
@@ -1043,21 +1081,29 @@ function validatorCheckHTML(x){return `<div class="check ${x.ok?"pass":"fail"}">
    add ~19px/~16px) — under a budget sized for the shorter Letter sheet
    (title 52px + footer reserve 40px inside the ~996px fit threshold),
    so every check prints in full on Letter and A4 alike. */
-const VAL_PAGE_BUDGET=910;
+const VAL_PAGE_BUDGET=870; /* round 5: 40px reserved for the HOST ONLY banner on every validator sheet */
 function estCheckPx(x){const ll=Math.max(1,Math.ceil(String(x.label||"").length/80));const dl=Math.max(1,Math.ceil(String(x.detail||"").length/95));return Math.round((56+19*(ll-1)+16*(dl-1)+14)*1.05)}
 function validatorSheets(c){const checks=validateCase(c);const pages=[];let pg=[],used=0;
  checks.forEach(x=>{const h=estCheckPx(x);if(pg.length&&used+h>VAL_PAGE_BUDGET){pages.push(pg);pg=[];used=0}pg.push(x);used+=h});
  if(pg.length)pages.push(pg);
- return pages.map((p,ix)=>`<h2 class="pg-title">Logic Validator Report${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${p.map(validatorCheckHTML).join("")}`)}
+ return pages.map((p,ix)=>`<div class="host-banner">CONFIDENTIAL — HOST ONLY — DO NOT DISTRIBUTE TO PLAYERS</div><h2 class="pg-title">Logic Validator Report${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${p.map(validatorCheckHTML).join("")}`)}
 /* round 4: the Host Reference — the secrets, alibi verdicts and witness
    conceals that used to be annotated onto the player documents themselves
    now live on these host-only sheets (with the Answer Key), so dossiers,
    witness statements and evidence cards print clean in EVERY pack and a
    host can hand any document to the table straight from the complete book. */
-function hostRefSheets(c){const blocks=c.suspects.map((s,i)=>`<div class="dossier"><b>${esc(s.name)}</b> — ${esc(s.occupation)}<p><b>Secret:</b> ${esc(s.secret)}</p><p><b>Alibi check:</b> ${esc(s.alibiNote)} ${i===c.killerIndex?"<b>★ THIS IS THE KILLER.</b>":""}</p></div>`);
+function hostRefSheets(c){const blocks=c.suspects.map((s,i)=>`<div class="dossier compact"><b>${esc(s.name)}</b> — ${esc(s.occupation)}<p><b>Secret:</b> ${esc(s.secret)}</p><p><b>Alibi check:</b> ${esc(s.alibiNote)} ${i===c.killerIndex?"<b>★ THIS IS THE KILLER.</b>":""}</p></div>`);
  const wit=`<h3 style="margin:14px 0 6px">What the Witnesses Conceal</h3>${c.witnesses.map(w=>`<p style="margin:4px 0"><b>${esc(w.name)} conceals:</b> ${esc(w.concealed)}</p>`).join("")}`;
- const pages=[];for(let i=0;i<blocks.length;i+=6)pages.push(blocks.slice(i,i+6));
- return pages.map((pg,ix)=>`<h2 class="pg-title">Host Reference — Secrets &amp; Alibi Checks${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${pg.join("")}${ix===pages.length-1?wit:""}`)}
+ /* round 5: paginate by estimated height, like the validator report — six
+    blocks plus the witness conceals plus the HOST ONLY banner overflowed a
+    Letter sheet by 39px. A compact block runs ~140px, the conceals ~120px;
+    if the conceals would land alone, one block moves with them. */
+ const EST_BLOCK=140,EST_WIT=120,HR_BUDGET=840;
+ const pages=[];let pg=[],used=0;
+ blocks.forEach(b=>{if(pg.length&&used+EST_BLOCK>HR_BUDGET){pages.push(pg);pg=[];used=0}pg.push(b);used+=EST_BLOCK});
+ if(pg.length&&used+EST_WIT>HR_BUDGET){const last=pg.pop();pages.push(pg);pg=[last];used=EST_BLOCK}
+ if(pg.length)pages.push(pg);
+ return pages.map((pg,ix)=>`<div class="host-banner">CONFIDENTIAL — HOST ONLY — DO NOT DISTRIBUTE TO PLAYERS</div><h2 class="pg-title">Host Reference — Secrets &amp; Alibi Checks${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${pg.join("")}${ix===pages.length-1?wit:""}`)}
 function setCoverPhoto(file){const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const max=1000;let w=img.naturalWidth||1,h=img.naturalHeight||1;const sc=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*sc));h=Math.max(1,Math.round(h*sc));const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);cur.coverPhoto=cv.toDataURL("image/jpeg",0.85);autosave();toast("Cover photo set — see it on both covers below.");render()};img.onerror=()=>toast("That file could not be read as an image.");img.src=rd.result};rd.onerror=()=>toast("That file could not be read.");rd.readAsDataURL(file)}
 function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{date:"",place:"",host:""};
  el.innerHTML=`<h2>Design Studio</h2><p class="sub">Six cover styles over the ${esc(cur.themeLabel)} palette. The cover always carries the case label, the CONFIDENTIAL stamp, and the badge line buyers look for: suspects · players · time · difficulty.</p>
@@ -1097,7 +1143,7 @@ function pairs(a){const o=[];for(let i=0;i<a.length;i+=2)o.push(a.slice(i,i+2));
 function dossierCard(c,s,i,full){return `<div class="dossier"><div style="display:flex;gap:10px"><div class="portrait" style="width:52px;height:52px">${portraitSVG(s,52)}</div><div>
  <b style="font-size:15px">${esc(s.name)}</b> — ${esc(s.occupation)}<br><span class="mini">${esc(s.relationship)}</span></div></div>
  <p><b>Personality:</b> ${esc(s.personality)}</p><p><b>Motive:</b> ${esc(s.motive)}</p>
- <p><b>Alibi (as claimed):</b> ${esc(s.alibi)}</p><p><b>Suspicious detail:</b> ${esc(s.suspicious)}</p>
+ <p><b>${s.alibiTrue?"Alibi (verified):":"Alibi (as claimed):"}</b> ${esc(s.alibi)}</p><p><b>Suspicious detail:</b> ${esc(s.suspicious)}</p>
  <p><b>Clues I can share:</b></p><ul style="margin:2px 0">${s.clues.map(cl=>`<li>${esc(cl)}</li>`).join("")}</ul>
 </div>`}
 /* round 4: evidence cards print CLEAN in every pack — the host verdicts
@@ -1109,7 +1155,7 @@ function evidenceCard(c,e,host){return `<div class="evcard"><div class="evid">${
  <p style="margin:4px 0"><b>Found:</b> ${esc(e.found)}${e.linked&&e.linked!=="—"?` · <b>Linked to:</b> ${esc(e.linked)}`:""}</p>
  <p style="margin:4px 0"><b>What it may reveal:</b> ${esc(e.reveals)}</p></div>`}
 function composeBook(c,kind){const host=kind!=="player";const S=[];const raw=[];
- const add=(html,cover)=>raw.push({html,cover:!!cover});
+ const add=(html,cover,hostOnly)=>raw.push({html,cover:!!cover,hostOnly:!!hostOnly});
  add(coverHTML(c,false),true);
  if(host)add(`<h2 class="pg-title">Host Quick-Start</h2>
   <p><b>Prep time:</b> about 20 minutes · <b>Play time:</b> ${esc(c.playTime)} · <b>Players:</b> ${esc(c.players)} · <b>Format:</b> ${esc(c.format)}</p>
@@ -1117,6 +1163,7 @@ function composeBook(c,kind){const host=kind!=="player";const S=[];const raw=[];
   <h3>Run the night</h3><p>Read the case summary aloud. Give players 15 minutes with the dossiers, then release Round 2, then Round 3. Offer hints only when the table stalls — Hint 1 first. Collect accusation ballots, then open the sealed solution and read the reveal script.</p>
   <h3>Character assignment</h3><table><tr><th>Suspect</th><th>Role</th><th>Assignment</th></tr>${c.suspects.map((s,i)=>`<tr><td>${esc(s.name)}</td><td>${esc(s.occupation)}</td><td>${i<6?"Mandatory":"Optional (extra guest)"}</td></tr>`).join("")}</table>
   <p><b>Host-can-play:</b> the solution stays sealed until the reveal, so you can investigate alongside your guests.</p>
+  <p><b>Never hand to players:</b> __HOSTPAGES__ — keep these pages with you until every ballot is in.</p>
   <p><b>Extra players:</b> more guests than suspects? They play as detectives — hand them the detective badges from the props pages. Detectives interview the suspects, work the investigation board and cast accusation ballots alongside everyone else.</p>`);
  add(`<h2 class="pg-title">Case Summary — Police Report</h2>
   <p class="typew">CASE NO. ${esc(c.caseNo)} · ${esc(c.dateStr)} · ${esc(c.themeLabel).toUpperCase()}</p>
@@ -1133,18 +1180,22 @@ function composeBook(c,kind){const host=kind!=="player";const S=[];const raw=[];
  add(`<h2 class="pg-title">Investigation Board</h2><div class="board-cols">${c.suspects.map((s,i)=>`<div class="board-card"><b class="nm">${esc(s.name)}</b><br><span class="mini">${esc(s.occupation)}</span><br><b>Motive:</b> ${esc(s.motive)}<br><b>Evidence:</b><br>${c.evidence.filter(e=>e.target===i||e.linked===s.name).map(e=>`<span class="chip">${esc(e.id)} ${esc(e.type)}</span>`).join("")||'<span class="mini">none yet</span>'}</div>`).join("")}</div><h3>My theory</h3><p style="line-height:2.2">The killer is ______________________ because ______________________________________________<br>and the evidence that proves it is ____________ and ____________.</p>`);
  add(`<h2 class="pg-title">Hints — Open Only If Stuck</h2>${c.hints.map(h=>`<div class="evcard"><b>HINT ${h.level}</b><p>${esc(h.text)}</p></div>`).join("")}<p class="mini">Hosts: read one hint at a time, lowest first.</p>`);
  if(kind!=="host")propsSheets(c).forEach(pg=>add(pg));
- if(host){hostRefSheets(c).forEach(pg=>add(pg));
-  add(`<div class="sealed" style="margin-top:1.2in"><div class="stamp" style="font-size:26px">Sealed Solution</div><h2 style="font-size:26px;margin:14px 0">HOST ONLY</h2><p>Do not open until every accusation ballot is in.<br>Case No. ${esc(c.caseNo)} · ${esc(c.title)}</p><p class="typew">Breaking this seal early spoils the night.</p></div>`);
+ if(host){hostRefSheets(c).forEach(pg=>add(pg,false,true));
+  add(`<div class="sealed" style="margin-top:1.2in"><div class="stamp" style="font-size:26px">Sealed Solution</div><h2 style="font-size:26px;margin:14px 0">HOST ONLY</h2><p>Do not open until every accusation ballot is in.<br>Case No. ${esc(c.caseNo)} · ${esc(c.title)}</p><p class="typew">Breaking this seal early spoils the night.</p></div>`,false,true);
   const sol=solutionHTML(c);const cut=sol.indexOf("<h3>Why the Innocent");
-  add(`<h2 class="pg-title">Answer Key (1 of 2)</h2>`+(cut>0?sol.slice(0,cut):sol));
-  if(cut>0)add(`<h2 class="pg-title">Answer Key (2 of 2)</h2>`+sol.slice(cut));
-  validatorSheets(c).forEach(pg=>add(pg))}
+  add(`<div class="host-banner">CONFIDENTIAL — HOST ONLY — DO NOT DISTRIBUTE TO PLAYERS</div><h2 class="pg-title">Answer Key (1 of 2)</h2>`+(cut>0?sol.slice(0,cut):sol),false,true);
+  if(cut>0)add(`<div class="host-banner">CONFIDENTIAL — HOST ONLY — DO NOT DISTRIBUTE TO PLAYERS</div><h2 class="pg-title">Answer Key (2 of 2)</h2>`+sol.slice(cut),false,true);
+  validatorSheets(c).forEach(pg=>add(pg,false,true))}
  if(kind!=="host")add(coverHTML(c,true),true);
  add(`<h2 class="pg-title">Commercial Licence</h2><p><b>Licensed to:</b> ${esc(c.shopName||"the original purchaser")}.</p>
  <p><b>You MAY</b> sell the finished, flattened printable packs you create with this tool — on Etsy, Amazon KDP, your own shop, or as client work — and keep 100% of your revenue.</p>
  <p><b>You MAY NOT</b> redistribute, resell or share the tool itself, its templates, its content banks or editable source files, and you may not claim the tool as your own work.</p>
  <p>All stories, names and documents in this pack are original fiction. Any resemblance to real persons is coincidental. No real agency insignia is used.</p>
  <p class="typew">Whodunit Case-File Builder · A Songlap Deals studio tool</p>`);
+ /* round 5: the quick-start names the exact pages that must never reach
+    players, so a host separating printed sheets cannot mistake them */
+ const hostPages=raw.map((r,i)=>r.hostOnly?i+1:null).filter(n=>n!==null);
+ if(hostPages.length){const hp="Host Reference, Sealed Solution, Answer Key and Logic Validator Report (pages "+hostPages[0]+"–"+hostPages[hostPages.length-1]+")";raw[1].html=raw[1].html.split("__HOSTPAGES__").join(hp)}
  const total=raw.length;
  raw.forEach((r,i)=>S.push(r.cover?`<div class="sheet cover-sheet">${r.html}</div>`:sheet(c,r.html,i+1,total)));
  return S}
@@ -1431,7 +1482,7 @@ function runTests(){const lines=[];let fails=0;const T=(name,cond,extra)=>{lines
   scanSlash(c,"case");
   const bookSlash=(composeBook(c,"complete").join("")+composeBook(c,"player").join("")).replace(/Page \d+ \/ \d+/g,"");
   T("E10 no unchosen slash alternatives in case or books "+tk+" seed "+sd,slashFields.length===0&&!bookSlash.includes(" / "),slashFields[0]||"")}
- T("E10 banks hold single options only (motives, secrets, clues, evidence + herring types)",[...GENERIC_MOTIVES,...GENERIC_SECRETS,...CLUE_TEMPLATES].every(x=>!x.includes(" / "))&&[...EVIDENCE_TYPES,...HERRING_TEMPLATES].every(e=>!e.type.includes(" / ")&&!e.killer?.includes(" / ")&&!e.clear?.includes(" / ")&&!e.desc.includes(" / ")&&!(e.text||"").includes(" / ")&&!(e.explain||"").includes(" / ")));
+ T("E10 banks hold single options only (motives, secrets, clues, evidence + herring types)",[...GENERIC_MOTIVES,...GENERIC_SECRETS,...CLUE_TEMPLATES].every(x=>!x.includes(" / "))&&[...EVIDENCE_TYPES,...HERRING_TEMPLATES].every(e=>!e.type.includes(" / ")&&!e.killer?.includes(" / ")&&!e.clear?.includes(" / ")&&!e.desc.includes(" / ")&&!(e.text||"").includes(" / ")&&!(e.explain||"").includes(" / ")&&!(e.neutral||"").includes(" / "))&&Object.values(THEMES).flatMap(t=>t.evidenceFlavor).every(e=>!e.type.includes(" / ")&&!e.killer.includes(" / ")&&!e.clear.includes(" / ")&&!e.desc.includes(" / ")&&!(e.neutral||"").includes(" / "))&&Object.values(KILLER_MOTIVE_LINKS).every(x=>!x.includes(" / "))&&Object.values(THEMES).flatMap(t=>t.methods).every(m=>!m.text.includes(" / ")&&!(m.evidence&&(m.evidence.killer.includes(" / ")||m.evidence.desc.includes(" / ")))));
  STARTERS.forEach(s=>{const sf=[];const scS=(o,p)=>{if(typeof o==="string"){if(o.includes(" / "))sf.push(p+" = "+o.slice(0,60))}else if(Array.isArray(o))o.forEach((v,i)=>scS(v,p+"["+i+"]"));else if(o&&typeof o==="object")Object.keys(o).forEach(k=>scS(o[k],p+"."+k))};scS(s,"starter");T("E10 starter has no slash alternatives: "+s.title,sf.length===0,sf[0]||"")});
  STARTERS.forEach(s=>{const bad=validateCase(s).filter(x=>!x.ok);T("starter validates: "+s.title,bad.length===0,bad.map(x=>x.label).join("; "))});
  const demo=generateCase({theme:"speakeasy",difficulty:"medium",format:FORMATS[0],tone:"Serious",seed:99});
@@ -1475,6 +1526,55 @@ function runTests(){const lines=[];let fails=0;const T=(name,cond,extra)=>{lines
    cc.evidence.filter(e=>e.kind==="killer"&&e.type==="Key Record").forEach(e=>{if(!e.text.includes(fmtTime(cc.crimeTime-4))||!e.text.includes(fmtTime(cc.crimeTime-2)))keyOK=false})}}
   T("E12 sighting clues never contradict a confirmed alibi",sightOK);
   T("E12 key-record killer text carries real timestamps",keyOK)}
+ /* Round 5 — ChatGPT Red Team review of Host Pack Book C (coldcase, expert):
+    every confirmed defect fixed at the generator, with a regression test each */
+ {const K5=c=>c.suspects[c.killerIndex];
+  let coldOK=true,cold911=true,coldMethod=true,coldNeutral=true;
+  for(const sd of [20263,7,1234,555,98765]){const cc=generateCase({theme:"coldcase",difficulty:"expert",format:FORMATS[0],tone:"Serious",seed:sd});
+   if(/19\d\d|20\d\d/.test(cc.victim.role+" "+cc.victim.profile))coldOK=false;
+   if(cc.setting.includes("Hartley file")||!cc.timeline[0].event.includes(cc.setting))coldOK=false;
+   if(cc.method.includes("never happened")||cc.method.includes("staged single-car"))coldOK=false;
+   cc.witnesses.forEach(w=>{if(/911/.test(w.role)&&(w.time!=="10:07 PM"||!w.seen.includes("called 911")))cold911=false});
+   if(cc.method.includes("sedative")&&!cc.evidence.some(e=>e.kind==="killer"&&e.type==="Recovered Thermos"))coldMethod=false;
+   cc.evidence.filter(e=>e.kind==="killer"&&e.type==="Recovered Thermos").forEach(e=>{if(e.found!==cc.crimePlace)coldMethod=false});
+   cc.evidence.filter(e=>e.kind==="neutral").forEach(e=>{if(e.text.includes("ordinary clutter"))coldNeutral=false});
+   if(KILLER_MOTIVE_LINKS[K5(cc).secret]!==K5(cc).motive)coldOK=false}
+  T("E13 coldcase victim has no case year, setting is a real place, no phantom accident",coldOK);
+  T("E13 the 911 caller is timestamped by the call (after discovery)",cold911);
+  T("E13 sedative method always arrives with its thermos evidence at the scene",coldMethod);
+  T("E13 neutral items always show real content, never the clutter line",coldNeutral);
+  let linkOK=true,alibiOK=true,herrOK=true;
+  for(const tk of Object.keys(THEMES))for(const sd of [20263,42,777]){const cc=generateCase({theme:tk,difficulty:"medium",format:FORMATS[0],tone:"Serious",seed:sd});
+   if(KILLER_MOTIVE_LINKS[K5(cc).secret]!==K5(cc).motive)linkOK=false;
+   const oldK=cc.killerIndex;swapKiller(cc);if(KILLER_MOTIVE_LINKS[K5(cc).secret]!==K5(cc).motive)linkOK=false;
+   cc.suspects.forEach((su,i)=>{if(i!==cc.killerIndex){if(!su.alibi.includes(su.alibiFrom)||!cc.timeline.some(e=>e.who===su.name&&e.time===su.alibiFrom))alibiOK=false}});
+   cc.evidence.filter(e=>e.kind==="herring").forEach(e=>{const t=e.text;
+    if(e.type==="Stained Cuff"&&!t.includes("wine"))herrOK=false;
+    if(e.type==="Overheard Argument"&&!t.includes("game of cards"))herrOK=false;
+    if(e.type==="Hidden Keepsake"&&!t.includes("days earlier"))herrOK=false;
+    if(e.type==="False Timesheet"&&!t.includes("secret meeting"))herrOK=false;
+    if(e.explain.includes("tested and confirmed")||e.explain.includes("see dossier"))herrOK=false})}
+  T("E13 killer motive always follows from the killer secret (incl. after swap)",linkOK);
+  T("E13 dossier alibi start matches the timeline confirmed-from time",alibiOK);
+  T("E13 herring cards carry their own resolution; explains add no new facts",herrOK);
+  const c5=generateCase({theme:"coldcase",difficulty:"expert",format:FORMATS[0],tone:"Serious",seed:20263});
+  const comp5=composeBook(c5,"complete").join(""),play5=composeBook(c5,"player").join("");
+  const K5x=c5.suspects[c5.killerIndex];
+  T("E13 dossier labels verified vs claimed alibis",dossierCard(c5,K5x,c5.killerIndex,true).includes("Alibi (as claimed):")&&c5.suspects.every((su,i)=>i===c5.killerIndex||dossierCard(c5,su,i,true).includes("Alibi (verified):")));
+  T("E13 killer clue texts never deny the alibi place",()=>{
+    // The killer's alibi ALWAYS places them at {L2} for the whole critical
+    // half-hour, so no killer clue may claim the killer "never visited" {L2}
+    // (the Receipt did exactly that — caught by a blind solve 2026-11-26).
+    const deny=/never (to have visited|went near|entered)|denies being|claims never/;
+    const bad=[];
+    const scan=(txt,where)=>{ if(deny.test(txt)&&txt.includes('{L2}')) bad.push(where+': '+txt.slice(0,80)); };
+    EVIDENCE_TYPES.forEach(e=>{ if(e.killer) scan(e.killer,'generic '+e.type); });
+    Object.keys(THEMES).forEach(tk=>{ (THEMES[tk].evidenceFlavor||[]).forEach(f=>{ if(f.killer) scan(f.killer,tk+' '+f.type); }); });
+    assert(bad.length===0,bad.join(' | '));
+  });
+  T("E13 every host page carries the HOST ONLY banner; player pack has none",(comp5.match(/CONFIDENTIAL — HOST ONLY — DO NOT DISTRIBUTE TO PLAYERS/g)||[]).length>=4&&!play5.includes("CONFIDENTIAL — HOST ONLY"));
+  T("E13 quick-start names the exact never-distribute pages",/Never hand to players:<\/b> Host Reference, Sealed Solution, Answer Key and Logic Validator Report \(pages \d+–\d+\)/.test(comp5));
+ }
  T("props render",propsHTML(demo).includes("ACCUSATION BALLOT"));
  cur=demo;["build","suspects","evidence","witnesses","timeline","design","export","cases"].forEach(t=>{activeTab=t;try{render();T("tab renders: "+t,true)}catch(e){T("tab renders: "+t,false,e.message)}});
  activeTab="build";render();
