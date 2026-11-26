@@ -1021,6 +1021,22 @@ function propsHTML(c){return `<div class="props-grid">
 function propsSheets(c){const items=propsItems(c);const pages=[];
  for(let i=0;i<items.length;i+=12)pages.push(items.slice(i,i+12));
  return pages.map((pg,ix)=>`<h2 class="pg-title">Props — Cut Out${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2><div class="props-grid">\n ${pg.join("\n ")}\n </div>`)}
+function validatorCheckHTML(x){return `<div class="check ${x.ok?"pass":"fail"}"><div class="ic">${x.ok?"✓":"✗"}</div><div><b>${esc(x.label)}</b><small>${esc(x.detail)}</small></div></div>`}
+/* the printed Logic Validator Report paginates like the props sheets
+   (audit round 3): the report carries one check row per innocent, so on
+   medium+ cases a single fixed-height sheet overflowed and the tail of
+   the report was clipped off the printed book. Rows are packed by an
+   estimated height — calibrated against the real print layout (a plain
+   row measures 56px + 14px margins; extra wrapped label/detail lines
+   add ~19px/~16px) — under a budget sized for the shorter Letter sheet
+   (title 52px + footer reserve 40px inside the ~996px fit threshold),
+   so every check prints in full on Letter and A4 alike. */
+const VAL_PAGE_BUDGET=910;
+function estCheckPx(x){const ll=Math.max(1,Math.ceil(String(x.label||"").length/80));const dl=Math.max(1,Math.ceil(String(x.detail||"").length/95));return Math.round((56+19*(ll-1)+16*(dl-1)+14)*1.05)}
+function validatorSheets(c){const checks=validateCase(c);const pages=[];let pg=[],used=0;
+ checks.forEach(x=>{const h=estCheckPx(x);if(pg.length&&used+h>VAL_PAGE_BUDGET){pages.push(pg);pg=[];used=0}pg.push(x);used+=h});
+ if(pg.length)pages.push(pg);
+ return pages.map((p,ix)=>`<h2 class="pg-title">Logic Validator Report${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${p.map(validatorCheckHTML).join("")}`)}
 function setCoverPhoto(file){const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const max=1000;let w=img.naturalWidth||1,h=img.naturalHeight||1;const sc=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*sc));h=Math.max(1,Math.round(h*sc));const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);cur.coverPhoto=cv.toDataURL("image/jpeg",0.85);autosave();toast("Cover photo set — see it on both covers below.");render()};img.onerror=()=>toast("That file could not be read as an image.");img.src=rd.result};rd.onerror=()=>toast("That file could not be read.");rd.readAsDataURL(file)}
 function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{date:"",place:"",host:""};
  el.innerHTML=`<h2>Design Studio</h2><p class="sub">Six cover styles over the ${esc(cur.themeLabel)} palette. The cover always carries the case label, the CONFIDENTIAL stamp, and the badge line buyers look for: suspects · players · time · difficulty.</p>
@@ -1094,7 +1110,7 @@ function composeBook(c,kind){const host=kind!=="player";const S=[];const raw=[];
   const sol=solutionHTML(c);const cut=sol.indexOf("<h3>Why the Innocent");
   add(`<h2 class="pg-title">Answer Key (1 of 2)</h2>`+(cut>0?sol.slice(0,cut):sol));
   if(cut>0)add(`<h2 class="pg-title">Answer Key (2 of 2)</h2>`+sol.slice(cut));
-  add(`<h2 class="pg-title">Logic Validator Report</h2>${validateCase(c).map(x=>`<div class="check ${x.ok?"pass":"fail"}"><div class="ic">${x.ok?"✓":"✗"}</div><div><b>${esc(x.label)}</b><small>${esc(x.detail)}</small></div></div>`).join("")}`)}
+  validatorSheets(c).forEach(pg=>add(pg))}
  if(kind!=="host")add(coverHTML(c,true),true);
  add(`<h2 class="pg-title">Commercial Licence</h2><p><b>Licensed to:</b> ${esc(c.shopName||"the original purchaser")}.</p>
  <p><b>You MAY</b> sell the finished, flattened printable packs you create with this tool — on Etsy, Amazon KDP, your own shop, or as client work — and keep 100% of your revenue.</p>
@@ -1401,6 +1417,16 @@ function runTests(){const lines=[];let fails=0;const T=(name,cond,extra)=>{lines
  T("cover renders in all 6 styles",COVER_STYLES.every(s=>{demo.coverStyle=s.key;return coverHTML(demo,false).includes("cov-title")}));
  demo.coverPhoto="data:image/gif;base64,R0lGODlhAQABAAAAACw=";const cpF=coverHTML(demo,false),cpB=coverHTML(demo,true);demo.coverPhoto="";
  T("cover photo appears on front + back covers when set (and not when unset)",cpF.includes("cov-photo")&&cpB.includes("cov-back-photo")&&!coverHTML(demo,false).includes("cov-photo")&&!coverHTML(demo,true).includes("cov-photo"));
+ /* regression tests for the audit round-3 fix (E11): the printed Logic
+    Validator Report paginates — every check reaches the book, each sheet
+    stays within the calibrated page budget, big cases split over 2+ sheets */
+ for(const tk of Object.keys(THEMES))for(const d of DIFFICULTIES){
+  const c=generateCase({theme:tk,difficulty:d.key,format:FORMATS[0],tone:"Serious",seed:31337+d.count});
+  const checks=validateCase(c);const vs=validatorSheets(c);const vj=vs.join("");
+  T("E11 validator report prints every check "+tk+"/"+d.key,checks.every(x=>vj.includes(esc(x.label)))&&vj.includes("Evidence file is substantial"),checks.length+" checks over "+vs.length+" sheet(s)");
+  T("E11 validator sheets stay within the page budget "+tk+"/"+d.key,vs.every(pg=>{const inPg=checks.filter(x=>pg.includes(esc(x.label)));return inPg.length<=1||inPg.reduce((a,x)=>a+estCheckPx(x),0)<=VAL_PAGE_BUDGET}),vs.length+" sheet(s)");
+  if(d.key==="expert")T("E11 validator report paginates at expert size "+tk,vs.length>=2,vs.length+" sheets")}
+ T("E11 host + complete books carry the full report; player pack has none",composeBook(demo,"host").join("").includes("Evidence file is substantial")&&composeBook(demo,"complete").join("").includes("Evidence file is substantial")&&!composeBook(demo,"player").join("").includes("Logic Validator Report"));
  T("props render",propsHTML(demo).includes("ACCUSATION BALLOT"));
  cur=demo;["build","suspects","evidence","witnesses","timeline","design","export","cases"].forEach(t=>{activeTab=t;try{render();T("tab renders: "+t,true)}catch(e){T("tab renders: "+t,false,e.message)}});
  activeTab="build";render();
