@@ -1335,8 +1335,12 @@ function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{da
  const _cpf=$("#covPhotoFile");$("#covPhotoBtn").onclick=()=>_cpf.click();
  _cpf.onchange=()=>{const f=_cpf.files&&_cpf.files[0];if(f)setCoverPhoto(f)};
  const _cpr=$("#covPhotoRemove");if(_cpr)_cpr.onclick=()=>{cur.coverPhoto="";autosave();toast("Cover photo removed.");render()};
- $("#covName").onchange=e=>{cur.shopName=e.target.value;autosave();render()};
- $("#covPrepared").onchange=e=>{cur.preparedFor=e.target.value;autosave();render()};
+ /* the re-render replaces #panels while this input's blur/change event is
+    still running — the browser then throws "node to be removed is no
+    longer a child" and the preview never refreshes. Defer one tick so
+    the event finishes first (value is already saved via autosave). */
+ $("#covName").onchange=e=>{cur.shopName=e.target.value;autosave();setTimeout(render,0)};
+ $("#covPrepared").onchange=e=>{cur.preparedFor=e.target.value;autosave();setTimeout(render,0)};
  $("#invDate").onchange=e=>{cur.invite.date=e.target.value;autosave()};
  $("#invPlace").onchange=e=>{cur.invite.place=e.target.value;autosave()};
  $("#invHost").onchange=e=>{cur.invite.host=e.target.value;autosave()}}
@@ -1493,7 +1497,7 @@ function renderExport(el){if(!cur)return needCase(el);const kit=etsyKit(cur);
  </div>`;
  $("#xPaper").onchange=e=>{settings.paper=e.target.value;render()};
  $("#xInk").onchange=e=>{settings.inkSaver=e.target.value==="ink"};
- $("#xShop").onchange=e=>{cur.shopName=e.target.value;autosave();render()};
+ $("#xShop").onchange=e=>{cur.shopName=e.target.value;autosave();setTimeout(render,0)};
  $$("[data-print]",el).forEach(b=>b.onclick=()=>printPack(b.dataset.print));
  $("#xCoverPng").onclick=()=>coverPNG(cur);
  $("#xCardsPng").onclick=()=>{cur.evidence.forEach((e,i)=>setTimeout(()=>cardPNG(cur,e),i*450));toast("Downloading "+cur.evidence.length+" evidence card PNGs…")};
