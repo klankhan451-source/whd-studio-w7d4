@@ -6,7 +6,7 @@
 <title>Whodunit Case-File Builder — Songlap Deals</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Special+Elite&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Special+Elite&family=Oswald:wght@500;600&family=Cinzel:wght@700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#211d16; --ink2:#5c5546; --paper:#f6f1e5; --card:#fffdf7; --line:#d8cfba;
@@ -125,6 +125,91 @@ footer.app{max-width:1180px;margin:0 auto;padding:0 18px 30px;color:var(--ink2);
 .cover.style-neon .cov-label{border-color:#22d3ee;box-shadow:0 0 18px rgba(34,211,238,.45),inset 0 0 12px rgba(236,72,153,.25);background:rgba(0,0,0,.3)}
 .cover.style-neon h2.cov-title{color:#fff;text-shadow:0 0 12px rgba(236,72,153,.8)}
 .cover.style-vintage{background:linear-gradient(160deg,#d9c9a3,#e8dcc4 55%,#d3bf96)}
+/* ---------- cover styles: all named designs (ChatGPT 18 + Gemini 12) ---------- */
+.cover h2.cov-title{font-family:"Cinzel","Fraunces",serif}
+.cover .cov-label .over{font-family:"IBM Plex Mono","Special Elite",monospace}
+/* layout: manila folder (Gemini) — folder tab + typewriter file tag */
+.cover .cov-tab{margin:30px 22px 0;padding:7px 12px 5px;background:rgba(255,255,255,.30);border:2px solid currentColor;border-bottom:none;border-radius:10px 10px 0 0;font-family:"IBM Plex Mono","Special Elite",monospace;font-size:12px;letter-spacing:2.5px;text-transform:uppercase}
+.cover.layout-manila .cov-top{padding-top:6px}
+.cover.layout-manila .cov-label{background:rgba(255,255,255,.22)}
+/* the folder tab + two-line overline push the label ~60px lower than other
+   styles, so the fixed 44% stamp lands on the tagline for long titles —
+   drop the manila stamp into the motif band instead */
+.cover.layout-manila .stamp{top:54%}
+/* layout: crime-scene tape (Gemini) — two rotated tape strips in the flow,
+   one above and one below the motif band; the motif band is the cover's
+   flexible spacer, so the strips shrink it instead of pushing the badge
+   off the cover (absolute top:13%/bottom:13% strips crossed the title
+   and the badge — verified 2026-11-27) */
+.cover .cov-tape{flex:0 0 auto;height:26px;margin:10px 0;background:#e8c832;color:#141414;border-top:3px solid #141414;border-bottom:3px solid #141414;display:flex;align-items:center;justify-content:center;font-family:"Oswald",sans-serif;font-size:11px;font-weight:600;letter-spacing:3px;white-space:nowrap}
+.cover .cov-tape.t1{transform:rotate(-2.5deg)}
+.cover .cov-tape.t2{transform:rotate(2deg)}
+/* layout: redacted (Gemini) — heavy label + barred motif zone */
+.cover.layout-redacted .cov-label{background:rgba(0,0,0,.42);border-color:var(--th-accent)}
+.cover.layout-redacted .stamp{border-width:4px}
+/* layout: art-deco frame (Gemini manor deco / grand hotel) */
+.cover .cov-frame{position:absolute;inset:12px;border:2px solid var(--th-accent2);outline:1px solid var(--th-accent2);outline-offset:5px;pointer-events:none;z-index:2}
+.cover.layout-decoframe .cov-label{background:rgba(0,0,0,.22)}
+/* layout: noir thread (ChatGPT noir family) — a red string across the cover */
+.cover .cov-string{position:absolute;left:0;right:0;top:58%;height:2px;background:var(--th-accent);transform:rotate(-9deg);z-index:3;opacity:.9}
+.cover .cov-string::after{content:"";position:absolute;right:18%;top:-5px;width:12px;height:12px;border-radius:50%;background:var(--th-accent)}
+/* layout: cozy (ChatGPT cozy family) — soft rounded label */
+.cover.layout-cozy .cov-label{border-radius:14px;border-width:2px}
+/* layout: file folder (ChatGPT modern family) — label with a folder tab */
+.cover.layout-file .cov-label{border-radius:0 10px 10px 10px;position:relative;margin-top:34px}
+.cover.layout-file .cov-label::before{content:"";position:absolute;top:-13px;left:-2px;width:92px;height:13px;background:currentColor;opacity:.28;border-radius:8px 8px 0 0}
+/* layout: victorian (ChatGPT victorian family) — double-rule label */
+.cover.layout-vic .cov-label{border-width:2px;outline:1px solid currentColor;outline-offset:4px}
+/* layout: ink-saver (Gemini) — pure white, hairline rules, no fills */
+.cover.layout-ink{background:#fff;color:#17191D}
+.cover.layout-ink .cov-label{border:2px solid #17191D;background:#fff}
+.cover.layout-ink .cov-badge{border-color:#17191D}
+.cover.layout-ink .stamp{border-color:#17191D;color:#17191D;background:transparent}
+/* back covers — ChatGPT master: charcoal + parchment panel, gold heading */
+.cover .cov-back-cg{flex:1;display:flex;flex-direction:column;padding:14px 26px 0;min-height:0}
+.cover .cov-back-cg h3{font-family:"Cinzel","Fraunces",serif;font-size:25px;line-height:1.15;text-transform:uppercase;color:var(--th-accent2);margin:2px 0 10px}
+.cover .cov-back-panel{background:var(--th-paper);color:var(--th-ink);border-radius:4px;padding:12px 14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.cover .cov-back-panel p{font-size:11.5px;line-height:1.5;margin:0 0 8px}
+.cover .cov-back-panel h4{font-family:"Oswald",sans-serif;letter-spacing:2px;font-size:12px;margin:2px 0 6px;color:var(--th-ink)}
+.cover .cov-back-panel ul{margin:0;padding-left:2px;list-style:none;font-size:11.5px;line-height:1.75}
+.cover .cov-back-panel ul li::before{content:"✓ ";color:var(--th-ink);font-weight:700}
+.cover .cov-strip{margin:12px 0 0;text-align:center;font-family:"Oswald",sans-serif;letter-spacing:2px;font-size:11.5px;color:var(--th-accent2);border-top:1.5px solid currentColor;border-bottom:1.5px solid currentColor;padding:6px 4px;text-transform:uppercase}
+.cover .cov-back-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px}
+.cover .cov-back-row .pub{font-family:"Special Elite",monospace;font-size:11px;letter-spacing:1px}
+.cover .cov-barcode{width:104px;height:62px;background:#fff;border:1px solid #999;display:flex;align-items:flex-end;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:8px;letter-spacing:2px;color:#333;padding-bottom:3px;flex:0 0 auto}
+.cover .cov-prepared{font-family:"Special Elite",monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:.9;margin-top:8px}
+/* back covers — Gemini master: title restated, teaser, proof grid, strip */
+.cover .cov-back-gm{flex:1;display:flex;flex-direction:column;padding:14px 26px 0;min-height:0}
+.cover .cov-back-gm h3{font-family:"Cinzel","Fraunces",serif;font-size:17px;line-height:1.2;text-transform:uppercase;margin:2px 0 8px}
+.cover .cov-back-gm .teaser{font-size:11.5px;line-height:1.5;margin:0 0 10px}
+.cover .cov-back-gm h4{font-family:"Oswald",sans-serif;letter-spacing:2px;font-size:12px;margin:0 0 5px}
+.cover .cov-back-gm ul{margin:0 0 10px;padding-left:2px;list-style:none;font-size:11.5px;line-height:1.7}
+.cover .cov-back-gm ul li::before{content:"✓ ";font-weight:700}
+.cover .cov-proof{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 10px;text-align:center}
+.cover .cov-proof b{display:block;font-family:"Oswald",sans-serif;font-size:16px}
+.cover .cov-proof span{font-size:10px;letter-spacing:1px;text-transform:uppercase;opacity:.85}
+.cover .cov-back-gm .cov-strip{margin-top:auto}
+/* per-style background treatments (beyond the palette vars) */
+.cover.style-cg-midnight{background:linear-gradient(165deg,#232833,#17191d 70%);color:#e9dfc9}
+.cover.style-cg-blackwood{background:linear-gradient(180deg,#17110e,#0e0b09 75%);color:#e9dfc9}
+.cover.style-cg-victorian{background:radial-gradient(ellipse at 50% 0%,#3a2426,#241a1a 70%);color:#e9dfc9}
+.cover.style-cg-clockmaker{background:linear-gradient(160deg,#262019,#1d1a16 65%);color:#e9dfc9}
+.cover.style-cg-rosewood{background:radial-gradient(ellipse at 50% 0%,#452228,#2e1a1e 70%);color:#f5f0e6}
+.cover.style-cg-hotel{background:linear-gradient(180deg,#18293e,#14202e 70%);color:#e9dfc9}
+.cover.style-cg-oldestate{background:linear-gradient(180deg,#2b3524,#232a20 70%);color:#e9dfc9}
+.cover.style-gm-gaslight{background:radial-gradient(ellipse at 50% 0%,#3a2c17,#1c1712 70%);color:#e9dfc9}
+.cover.style-gm-espionage{background:linear-gradient(160deg,#33392b,#2a2e24 65%);color:#e6d5b8}
+.cover.style-gm-cyber{background:linear-gradient(165deg,#101a2e,#0b1220 70%);color:#e9dfc9}
+.cover.style-gm-gothic{background:linear-gradient(180deg,#191423,#0e0d12 75%);color:#e6d9c8}
+.cover.style-gm-speakeasy{background:radial-gradient(ellipse at 50% 0%,#2e2110,#17130c 70%);color:#e9dfc9}
+.cover.style-gm-cruise{background:linear-gradient(180deg,#122c42,#0e2233 70%);color:#eef0e9}
+.cover.style-gm-tape{background:linear-gradient(180deg,#1b1b1b,#141414 70%);color:#e9dfc9}
+.cover.style-gm-redacted{background:linear-gradient(165deg,#232323,#1a1a1a 70%);color:#e9dfc9}
+.cover.style-gm-library{background:linear-gradient(180deg,#453624,#3a2e22 70%);color:#f5f0e6}
+.cover.style-gm-deco{background:radial-gradient(ellipse at 50% -10%,#1c2a44,#101828 65%);color:#e9dfc9}
+.cover.style-cg-estate .cov-label,.cover.style-cg-unsolved .cov-label{background:rgba(255,255,255,.5)}
+.cover.style-cg-library .cov-label,.cover.style-cg-tearoom .cov-label,.cover.style-cg-cottage .cov-label{background:rgba(255,255,255,.55)}
+.cover.style-gm-manila .cov-label{background:rgba(255,255,255,.22)}
 /* ---------- props ---------- */
 .props-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
 .prop{border:1.5px dashed #a99c78;border-radius:10px;padding:12px;text-align:center;background:#fff}
@@ -648,13 +733,59 @@ coldcase:{label:"Modern Cold Case",blurb:"A reopened file, new eyes on an old cr
  witnessRoles:["A retired patrol officer","The victim's neighbour, then and now","A former student, now grown","The original 911 caller"],
  titleTemplates:["The {V} File: Reopened","Cold Trail: {V}","Fifteen Years for {V}","The {V} Evidence Room"]}
 };
+/* Cover styles — EVERY named design from both AI guides, plus the 6
+   original studio styles (kept: starters + saved cases reference them).
+   ChatGPT: 18 = 6 families × 3 (chatgpt_style_guide.md).
+   Gemini: 12 signature designs (gemini_style_guide.md).
+   pal = cover palette override (else the case theme's palette is used);
+   motif = motifSVG art; layout = structural variant; over = overline;
+   stamp/rot = stamp text + tilt; dark = dark cover treatment. */
 const COVER_STYLES=[
- {key:"vintage",label:"Vintage Police File"},
- {key:"deco",label:"Art Deco Luxury"},
- {key:"gothic",label:"Gothic Mansion"},
- {key:"modern",label:"Modern Crime"},
- {key:"minimal",label:"Minimalist Editorial"},
- {key:"neon",label:"Retro Neon"}];
+ /* --- legacy: the 6 original studio styles --- */
+ {key:"vintage",label:"Vintage Police File",fam:"Original Studio Styles",src:"legacy",motif:"default",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:false},
+ {key:"deco",label:"Art Deco Luxury",fam:"Original Studio Styles",src:"legacy",motif:"deco",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gothic",label:"Gothic Mansion",fam:"Original Studio Styles",src:"legacy",motif:"gothic",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:true},
+ {key:"modern",label:"Modern Crime",fam:"Original Studio Styles",src:"legacy",motif:"modern",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:false},
+ {key:"minimal",label:"Minimalist Editorial",fam:"Original Studio Styles",src:"legacy",motif:"minimal",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:false},
+ {key:"neon",label:"Retro Neon",fam:"Original Studio Styles",src:"legacy",motif:"neon",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:true},
+ /* --- ChatGPT family 1: Classic English Manor --- */
+ {key:"cg-wrenfield",label:"Murder at Wrenfield Manor",fam:"Classic English Manor",src:"cg",pal:{bg:"#17191D",paper:"#E9DFC9",accent:"#D7B56D",accent2:"#F5F0E6",ink:"#17191D"},motif:"manor",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:true},
+ {key:"cg-estate",label:"The Estate Mystery",fam:"Classic English Manor",src:"cg",pal:{bg:"#E9DFC9",paper:"#F5F0E6",accent:"#7D2935",accent2:"#7D2935",ink:"#17191D"},motif:"key",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:false},
+ {key:"cg-blackwood",label:"The Last Night at Blackwood Hall",fam:"Classic English Manor",src:"cg",pal:{bg:"#14100E",paper:"#E9DFC9",accent:"#7D2935",accent2:"#D7B56D",ink:"#14100E"},motif:"arch",layout:"classic",over:"A Murder Mystery Investigation",stamp:"Confidential",rot:-6,dark:true},
+ /* --- ChatGPT family 2: Vintage Detective Noir --- */
+ {key:"cg-midnight",label:"The Midnight Investigation",fam:"Vintage Detective Noir",src:"cg",pal:{bg:"#1B1E24",paper:"#E9DFC9",accent:"#B91C1C",accent2:"#D4AF37",ink:"#1B1E24"},motif:"noir",layout:"noir",over:"A Vintage Detective Case",stamp:"Confidential",rot:-8,dark:true},
+ {key:"cg-alibi",label:"The Missing Alibi",fam:"Vintage Detective Noir",src:"cg",pal:{bg:"#20242B",paper:"#E9DFC9",accent:"#D7B56D",accent2:"#D7B56D",ink:"#20242B"},motif:"clock",layout:"noir",over:"A Vintage Detective Case",stamp:"Confidential",rot:-8,dark:true},
+ {key:"cg-clue",label:"The Final Clue",fam:"Vintage Detective Noir",src:"cg",pal:{bg:"#17191D",paper:"#F5F0E6",accent:"#D7B56D",accent2:"#E8C9A3",ink:"#17191D"},motif:"keyhole",layout:"noir",over:"A Vintage Detective Case",stamp:"Confidential",rot:-8,dark:true},
+ /* --- ChatGPT family 3: Cozy Mystery --- */
+ {key:"cg-library",label:"The Library Secret",fam:"Cozy Mystery",src:"cg",pal:{bg:"#EFE7D3",paper:"#FDFBF3",accent:"#7D2935",accent2:"#7D2935",ink:"#2E2620"},motif:"books",layout:"cozy",over:"A Cozy Mystery",stamp:"Confidential",rot:-6,dark:false},
+ {key:"cg-tearoom",label:"Murder at the Tea Room",fam:"Cozy Mystery",src:"cg",pal:{bg:"#F3EAD8",paper:"#FDFBF3",accent:"#7D2935",accent2:"#7D2935",ink:"#2E2620"},motif:"teacup",layout:"cozy",over:"A Cozy Mystery",stamp:"Confidential",rot:-6,dark:false},
+ {key:"cg-cottage",label:"The Cottage Clue",fam:"Cozy Mystery",src:"cg",pal:{bg:"#E9DFC9",paper:"#F5F0E6",accent:"#7A4A1F",accent2:"#7D2935",ink:"#2E2620"},motif:"cottage",layout:"cozy",over:"A Cozy Mystery",stamp:"Confidential",rot:-6,dark:false},
+ /* --- ChatGPT family 4: Modern Investigation --- */
+ {key:"cg-zero",label:"Case Zero",fam:"Modern Investigation",src:"cg",pal:{bg:"#F5F0E6",paper:"#FFFFFF",accent:"#17191D",accent2:"#7D2935",ink:"#17191D"},motif:"default",layout:"file",over:"A Modern Investigation",stamp:"Confidential",rot:-6,dark:false},
+ {key:"cg-evidence",label:"The Evidence Room",fam:"Modern Investigation",src:"cg",pal:{bg:"#E7E2D4",paper:"#FDFBF3",accent:"#17191D",accent2:"#17191D",ink:"#17191D"},motif:"box",layout:"file",over:"A Modern Investigation",stamp:"Confidential",rot:-6,dark:false},
+ {key:"cg-unsolved",label:"The Unsolved File",fam:"Modern Investigation",src:"cg",pal:{bg:"#E9DFC9",paper:"#F5F0E6",accent:"#7D2935",accent2:"#17191D",ink:"#17191D"},motif:"file",layout:"file",over:"A Modern Investigation",stamp:"Confidential",rot:-6,dark:false},
+ /* --- ChatGPT family 5: Victorian Mystery --- */
+ {key:"cg-victorian",label:"The Victorian Secret",fam:"Victorian Mystery",src:"cg",pal:{bg:"#241A1A",paper:"#E9DFC9",accent:"#D7B56D",accent2:"#E9DFC9",ink:"#241A1A"},motif:"watch",layout:"vic",over:"A Victorian Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"cg-clockmaker",label:"The Clockmaker's Mystery",fam:"Victorian Mystery",src:"cg",pal:{bg:"#1D1A16",paper:"#E9DFC9",accent:"#B08D4F",accent2:"#D7B56D",ink:"#1D1A16"},motif:"gears",layout:"vic",over:"A Victorian Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"cg-rosewood",label:"The Secret at Rosewood House",fam:"Victorian Mystery",src:"cg",pal:{bg:"#2E1A1E",paper:"#F5F0E6",accent:"#7D2935",accent2:"#D7B56D",ink:"#2E1A1E"},motif:"rose",layout:"vic",over:"A Victorian Mystery",stamp:"Confidential",rot:-6,dark:true},
+ /* --- ChatGPT family 6: Historical & Grand Estate --- */
+ {key:"cg-hotel",label:"The Grand Hotel Affair",fam:"Historical & Grand Estate",src:"cg",pal:{bg:"#14202E",paper:"#E9DFC9",accent:"#D7B56D",accent2:"#F5F0E6",ink:"#14202E"},motif:"bell",layout:"decoframe",over:"A Grand Estate Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"cg-oldestate",label:"Secrets of the Old Estate",fam:"Historical & Grand Estate",src:"cg",pal:{bg:"#232A20",paper:"#E9DFC9",accent:"#B08D4F",accent2:"#D7B56D",ink:"#232A20"},motif:"gate",layout:"classic",over:"A Grand Estate Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"cg-guest",label:"The Last Guest",fam:"Historical & Grand Estate",src:"cg",pal:{bg:"#17191D",paper:"#E9DFC9",accent:"#D7B56D",accent2:"#D8C9A3",ink:"#17191D"},motif:"door",layout:"classic",over:"A Grand Estate Mystery",stamp:"Confidential",rot:-6,dark:true},
+ /* --- Gemini: 12 signature designs --- */
+ {key:"gm-manila",label:"Authentic Manila Cold-Case",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#292524",paper:"#E6D5B8",accent:"#B91C1C",accent2:"#9E1B1B",ink:"#292524"},motif:"stack",layout:"manila",over:"A Printable Murder Mystery Case File",stamp:"Confidential",rot:15,dark:false},
+ {key:"gm-deco",label:"Midnight Manor Art Deco",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#101828",paper:"#E9DFC9",accent:"#D4AF37",accent2:"#F5F0E6",ink:"#101828"},motif:"moonmanor",layout:"decoframe",over:"A Whodunit Game Night",stamp:"Confidential",rot:-8,dark:true},
+ {key:"gm-redacted",label:"Classified Agency Redacted",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#1A1A1A",paper:"#E9DFC9",accent:"#B91C1C",accent2:"#D4AF37",ink:"#1A1A1A"},motif:"bars",layout:"redacted",over:"Classified — Eyes Only",stamp:"Classified",rot:10,dark:true},
+ {key:"gm-gaslight",label:"Victorian Gaslight Detective",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#1C1712",paper:"#E9DFC9",accent:"#D4AF37",accent2:"#D4AF37",ink:"#1C1712"},motif:"lamp",layout:"classic",over:"A Gaslight Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gm-tape",label:"Crime Scene Tape & Noir",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#141414",paper:"#E9DFC9",accent:"#E8C832",accent2:"#D4AF37",ink:"#141414"},motif:"tape",layout:"tape",over:"Do Not Cross",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gm-library",label:"Cozy Library Whodunit",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#3A2E22",paper:"#F5F0E6",accent:"#D4AF37",accent2:"#D4AF37",ink:"#3A2E22"},motif:"liblamp",layout:"cozy",over:"A Cozy Library Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gm-espionage",label:"Cold War Espionage Dossier",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#2A2E24",paper:"#E6D5B8",accent:"#B91C1C",accent2:"#D4AF37",ink:"#2A2E24"},motif:"case",layout:"classic",over:"Top Secret Dossier",stamp:"Top Secret",rot:-10,dark:true},
+ {key:"gm-cyber",label:"Modern Cyber Heist",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#0B1220",paper:"#E9DFC9",accent:"#22D3EE",accent2:"#D4AF37",ink:"#0B1220"},motif:"circuit",layout:"classic",over:"A Modern Cyber Case",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gm-gothic",label:"Gothic Hollow & Midnight",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#0E0D12",paper:"#E6D9C8",accent:"#8A93A6",accent2:"#D4AF37",ink:"#0E0D12"},motif:"moontree",layout:"classic",over:"A Gothic Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gm-speakeasy",label:"1920s Speakeasy Murder",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#17130C",paper:"#E9DFC9",accent:"#D4AF37",accent2:"#D4AF37",ink:"#17130C"},motif:"jazz",layout:"classic",over:"A 1920s Speakeasy Case",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gm-cruise",label:"Deadly Voyage Cruise Noir",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#0E2233",paper:"#EEF0E9",accent:"#D4AF37",accent2:"#D4AF37",ink:"#0E2233"},motif:"porthole",layout:"classic",over:"A Voyage in Mystery",stamp:"Confidential",rot:-6,dark:true},
+ {key:"gm-ink",label:"Clean Ink-Saver Case File",fam:"Gemini Signature Designs",src:"gm",pal:{bg:"#FFFFFF",paper:"#FFFFFF",accent:"#17191D",accent2:"#7D2935",ink:"#17191D"},motif:"minimal",layout:"ink",over:"A Printable Case File",stamp:"Confidential",rot:-6,dark:false}];
+function coverStyleCfg(c){return COVER_STYLES.find(s=>s.key===c.coverStyle)||COVER_STYLES[0]}
 const DIFFICULTIES=[
  {key:"easy",label:"Easy",count:4,players:"4–6 players",playTime:"60–90 min"},
  {key:"medium",label:"Medium",count:6,players:"6–8 players",playTime:"90–120 min"},
@@ -706,7 +837,7 @@ function generateCase(opts){
  const c={id:uid("case"),caseNo:String(101+Math.floor(r()*880)),title:"",themeKey:opts.theme,themeLabel:th.label,
   setting:th.setting,dateStr:th.dateStr,tone:opts.tone,format:opts.format,difficulty:diff.key,diffLabel:diff.label,
   players:diff.players,playTime:diff.playTime,victim,method:methodText,methodEvidence:methodObj.evidence||null,killerIndex:Math.floor(r()*suspects.length),
-  suspects,evidence:[],witnesses:[],timeline:[],hints:[],coverStyle:"vintage",coverPhoto:"",shopName:"",crimeTime:21*60+40,
+  suspects,evidence:[],witnesses:[],timeline:[],hints:[],coverStyle:"vintage",coverPhoto:"",shopName:"",preparedFor:"",crimeTime:21*60+40,
   crimePlace:crimePlace,altPlace:locs[1],seed:opts.seed||1};
  c.title=opts.title&&opts.title.trim()?opts.title.trim():makeTitle(r,th,victim);
  buildStoryFields(c,r);return c}
@@ -1030,29 +1161,101 @@ function motifSVG(style,color){const c=color||"currentColor";
  case "modern":return `<svg width="170" height="90" viewBox="0 0 170 90"><g transform="rotate(-8 85 45)"><rect x="-10" y="18" width="190" height="20" fill="${c}" opacity=".9"/><rect x="-10" y="52" width="190" height="20" fill="none" stroke="${c}" stroke-width="2"/><text x="85" y="33" text-anchor="middle" font-family="Oswald" font-size="13" fill="#111" letter-spacing="3">EVIDENCE</text></g></svg>`;
  case "minimal":return `<svg width="90" height="120" viewBox="0 0 90 120"><circle cx="45" cy="42" r="20" fill="none" stroke="${c}" stroke-width="3"/><path d="M45 58 L45 108 M45 84 L62 84 M45 100 L58 100" stroke="${c}" stroke-width="3" fill="none"/></svg>`;
  case "neon":return `<svg width="170" height="110" viewBox="0 0 170 110">${Array.from({length:9},(_,i)=>`<line x1="${10+i*19}" y1="20" x2="${-20+i*26}" y2="108" stroke="${c}" stroke-width="1" opacity=".65"/>`).join("")}${Array.from({length:6},(_,i)=>`<line x1="0" y1="${24+i*i*2.6}" x2="170" y2="${24+i*i*2.6}" stroke="${c}" stroke-width="1" opacity=".65"/>`).join("")}<circle cx="85" cy="16" r="9" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+ case "manor":return `<svg width="170" height="120" viewBox="0 0 170 120"><path d="M15 115 V55 L85 12 L155 55 V115 Z" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M60 115 V78 h50 V115" fill="none" stroke="${c}" stroke-width="1.6"/><rect x="34" y="66" width="14" height="18" fill="none" stroke="${c}" stroke-width="1.4"/><rect x="122" y="66" width="14" height="18" fill="none" stroke="${c}" stroke-width="1.4"/><circle cx="85" cy="38" r="9" fill="none" stroke="${c}" stroke-width="1.4"/></svg>`;
+ case "key":return `<svg width="150" height="90" viewBox="0 0 150 90"><circle cx="34" cy="45" r="20" fill="none" stroke="${c}" stroke-width="2.4"/><line x1="54" y1="45" x2="128" y2="45" stroke="${c}" stroke-width="2.4"/><line x1="108" y1="45" x2="108" y2="62" stroke="${c}" stroke-width="2.4"/><line x1="122" y1="45" x2="122" y2="58" stroke="${c}" stroke-width="2.4"/></svg>`;
+ case "arch":return `<svg width="110" height="130" viewBox="0 0 110 130"><path d="M18 128 V62 C18 30 36 14 55 6 C74 14 92 30 92 62 V128 Z" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M34 128 V68 C34 46 44 34 55 28 C66 34 76 46 76 68 V128" fill="none" stroke="${c}" stroke-width="1.4"/><line x1="55" y1="28" x2="55" y2="128" stroke="${c}"/><circle cx="55" cy="48" r="7" fill="none" stroke="${c}" stroke-width="1.4"/></svg>`;
+ case "noir":return `<svg width="170" height="110" viewBox="0 0 170 110"><line x1="-10" y1="20" x2="180" y2="96" stroke="${c}" stroke-width="1.6" opacity=".8"/><circle cx="72" cy="48" r="30" fill="none" stroke="${c}" stroke-width="2.4"/><line x1="94" y1="70" x2="128" y2="102" stroke="${c}" stroke-width="3"/><circle cx="72" cy="48" r="20" fill="none" stroke="${c}" opacity=".5"/></svg>`;
+ case "clock":return `<svg width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="46" fill="none" stroke="${c}" stroke-width="2.4"/><circle cx="55" cy="55" r="4" fill="${c}"/><line x1="55" y1="55" x2="55" y2="24" stroke="${c}" stroke-width="2.4"/><line x1="55" y1="55" x2="80" y2="66" stroke="${c}" stroke-width="2.4"/></svg>`;
+ case "keyhole":return `<svg width="90" height="120" viewBox="0 0 90 120"><circle cx="45" cy="42" r="22" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M36 58 L28 108 h34 L54 58 Z" fill="none" stroke="${c}" stroke-width="2.4"/></svg>`;
+ case "books":return `<svg width="170" height="110" viewBox="0 0 170 110"><rect x="18" y="18" width="34" height="82" fill="none" stroke="${c}" stroke-width="2"/><rect x="58" y="30" width="34" height="70" fill="none" stroke="${c}" stroke-width="2"/><rect x="98" y="12" width="34" height="88" fill="none" stroke="${c}" stroke-width="2"/><line x1="18" y1="30" x2="52" y2="30" stroke="${c}"/><line x1="98" y1="26" x2="132" y2="26" stroke="${c}"/></svg>`;
+ case "teacup":return `<svg width="150" height="100" viewBox="0 0 150 100"><path d="M30 40 h84 v14 c0 22 -18 36 -42 36 s-42 -14 -42 -36 Z" fill="none" stroke="${c}" stroke-width="2.2"/><path d="M114 46 h10 c8 0 10 16 0 18 h-12" fill="none" stroke="${c}" stroke-width="2"/><path d="M58 26 q6 -8 0 -16 M76 26 q6 -8 0 -16" fill="none" stroke="${c}" stroke-width="1.6"/><line x1="22" y1="96" x2="128" y2="96" stroke="${c}" stroke-width="2"/></svg>`;
+ case "cottage":return `<svg width="150" height="120" viewBox="0 0 150 120"><path d="M20 112 V58 L75 18 L130 58 V112 Z" fill="none" stroke="${c}" stroke-width="2.4"/><rect x="64" y="76" width="22" height="36" fill="none" stroke="${c}" stroke-width="1.6"/><rect x="34" y="66" width="16" height="16" fill="none" stroke="${c}" stroke-width="1.4"/><rect x="100" y="66" width="16" height="16" fill="none" stroke="${c}" stroke-width="1.4"/><line x1="108" y1="34" x2="108" y2="14" stroke="${c}" stroke-width="2"/></svg>`;
+ case "box":return `<svg width="170" height="110" viewBox="0 0 170 110"><path d="M20 40 L85 18 L150 40 V96 H20 Z" fill="none" stroke="${c}" stroke-width="2.2"/><line x1="20" y1="40" x2="85" y2="62" stroke="${c}" stroke-width="1.6"/><line x1="150" y1="40" x2="85" y2="62" stroke="${c}" stroke-width="1.6"/><line x1="85" y1="62" x2="85" y2="96" stroke="${c}" stroke-width="1.6"/><rect x="66" y="70" width="38" height="14" fill="none" stroke="${c}" stroke-width="1.4"/></svg>`;
+ case "file":return `<svg width="130" height="120" viewBox="0 0 130 120"><path d="M14 22 h44 l10 12 h48 V112 H14 Z" fill="none" stroke="${c}" stroke-width="2.2"/><text x="65" y="84" text-anchor="middle" font-family="Fraunces" font-size="46" font-weight="800" fill="${c}">?</text></svg>`;
+ case "watch":return `<svg width="110" height="120" viewBox="0 0 110 120"><circle cx="55" cy="66" r="42" fill="none" stroke="${c}" stroke-width="2.4"/><circle cx="55" cy="66" r="32" fill="none" stroke="${c}" stroke-width="1.2"/><line x1="55" y1="66" x2="55" y2="40" stroke="${c}" stroke-width="2"/><line x1="55" y1="66" x2="74" y2="76" stroke="${c}" stroke-width="2"/><line x1="55" y1="24" x2="55" y2="12" stroke="${c}" stroke-width="2.4"/><circle cx="55" cy="10" r="5" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+ case "gears":return `<svg width="160" height="110" viewBox="0 0 160 110"><circle cx="58" cy="55" r="34" fill="none" stroke="${c}" stroke-width="2.4" stroke-dasharray="7 5"/><circle cx="58" cy="55" r="12" fill="none" stroke="${c}" stroke-width="2"/><circle cx="116" cy="55" r="22" fill="none" stroke="${c}" stroke-width="2.4" stroke-dasharray="6 4"/><circle cx="116" cy="55" r="8" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+ case "rose":return `<svg width="110" height="120" viewBox="0 0 110 120">${[30,22,14,7].map(r=>`<circle cx="55" cy="46" r="${r}" fill="none" stroke="${c}" stroke-width="2"/>`).join("")}<path d="M55 76 C55 92 48 102 40 112 M55 92 C64 96 70 100 74 106" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+ case "bell":return `<svg width="150" height="100" viewBox="0 0 150 100"><path d="M45 62 c0 -22 12 -34 30 -34 s30 12 30 34 Z" fill="none" stroke="${c}" stroke-width="2.4"/><line x1="30" y1="66" x2="120" y2="66" stroke="${c}" stroke-width="2.4"/><line x1="24" y1="74" x2="126" y2="74" stroke="${c}" stroke-width="2.4"/><circle cx="75" cy="22" r="5" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+ case "gate":return `<svg width="160" height="120" viewBox="0 0 160 120"><path d="M10 112 V40 Q80 8 150 40 V112" fill="none" stroke="${c}" stroke-width="2.4"/>${[34,58,80,102,126].map(x=>`<line x1="${x}" y1="34" x2="${x}" y2="112" stroke="${c}" stroke-width="1.8"/>`).join("")}<line x1="10" y1="70" x2="150" y2="70" stroke="${c}" stroke-width="1.6"/></svg>`;
+ case "door":return `<svg width="110" height="130" viewBox="0 0 110 130"><rect x="24" y="8" width="62" height="114" fill="none" stroke="${c}" stroke-width="2.4"/><rect x="34" y="20" width="42" height="38" fill="none" stroke="${c}" stroke-width="1.4"/><rect x="34" y="70" width="42" height="38" fill="none" stroke="${c}" stroke-width="1.4"/><circle cx="72" cy="68" r="3.5" fill="${c}"/></svg>`;
+ case "stack":return `<svg width="170" height="120" viewBox="0 0 170 120"><rect x="14" y="26" width="110" height="76" fill="none" stroke="${c}" stroke-width="2" transform="rotate(-4 69 64)"/><rect x="40" y="14" width="110" height="76" fill="none" stroke="${c}" stroke-width="2" transform="rotate(3 95 52)"/><circle cx="118" cy="66" r="24" fill="none" stroke="${c}" stroke-width="2.4"/><line x1="136" y1="84" x2="156" y2="106" stroke="${c}" stroke-width="3"/><line x1="0" y1="104" x2="170" y2="30" stroke="${c}" stroke-width="1.4" opacity=".7"/></svg>`;
+ case "moonmanor":return `<svg width="170" height="120" viewBox="0 0 170 120"><circle cx="128" cy="26" r="16" fill="none" stroke="${c}" stroke-width="2"/><path d="M30 112 V64 L60 44 L74 54 V52 L96 36 L118 54 V62 L140 64 V112 Z" fill="none" stroke="${c}" stroke-width="2"/><rect x="52" y="80" width="10" height="12" fill="${c}" opacity=".7"/><rect x="96" y="80" width="10" height="12" fill="${c}" opacity=".7"/></svg>`;
+ case "bars":return `<svg width="170" height="100" viewBox="0 0 170 100"><rect x="10" y="14" width="150" height="16" fill="${c}"/><rect x="10" y="42" width="110" height="16" fill="${c}"/><rect x="10" y="70" width="130" height="16" fill="${c}"/></svg>`;
+ case "lamp":return `<svg width="110" height="130" viewBox="0 0 110 130"><line x1="55" y1="118" x2="55" y2="52" stroke="${c}" stroke-width="2.4"/><path d="M38 52 h34 l-6 -26 h-22 Z" fill="none" stroke="${c}" stroke-width="2.2"/><circle cx="55" cy="34" r="6" fill="none" stroke="${c}"/><line x1="30" y1="118" x2="80" y2="118" stroke="${c}" stroke-width="2.4"/></svg>`;
+ case "tape":return `<svg width="170" height="80" viewBox="0 0 170 80"><rect x="6" y="22" width="158" height="36" fill="none" stroke="${c}" stroke-width="2"/><line x1="20" y1="58" x2="44" y2="22" stroke="${c}" stroke-width="2"/><line x1="56" y1="58" x2="80" y2="22" stroke="${c}" stroke-width="2"/><line x1="92" y1="58" x2="116" y2="22" stroke="${c}" stroke-width="2"/><line x1="128" y1="58" x2="152" y2="22" stroke="${c}" stroke-width="2"/></svg>`;
+ case "liblamp":return `<svg width="170" height="120" viewBox="0 0 170 120"><rect x="14" y="40" width="26" height="66" fill="none" stroke="${c}" stroke-width="2"/><rect x="46" y="28" width="26" height="78" fill="none" stroke="${c}" stroke-width="2"/><rect x="78" y="48" width="26" height="58" fill="none" stroke="${c}" stroke-width="2"/><path d="M122 106 V58 h26 l-5 -18 h-16 Z" fill="none" stroke="${c}" stroke-width="2"/><circle cx="135" cy="28" r="10" fill="none" stroke="${c}"/></svg>`;
+ case "case":return `<svg width="160" height="110" viewBox="0 0 160 110"><rect x="20" y="36" width="120" height="62" fill="none" stroke="${c}" stroke-width="2.2"/><path d="M60 36 v-8 a8 8 0 0 1 8 -8 h24 a8 8 0 0 1 8 8 v8" fill="none" stroke="${c}" stroke-width="2.2"/><line x1="20" y1="58" x2="140" y2="58" stroke="${c}" stroke-width="1.6"/><rect x="70" y="52" width="20" height="12" fill="none" stroke="${c}" stroke-width="1.6"/></svg>`;
+ case "circuit":return `<svg width="170" height="110" viewBox="0 0 170 110"><path d="M20 90 h40 v-30 h30 v-20 h30 M20 30 h60 v30 M130 90 v-30" fill="none" stroke="${c}" stroke-width="2"/><circle cx="20" cy="90" r="5" fill="none" stroke="${c}" stroke-width="2"/><circle cx="20" cy="30" r="5" fill="none" stroke="${c}" stroke-width="2"/><circle cx="130" cy="40" r="5" fill="none" stroke="${c}" stroke-width="2"/><circle cx="130" cy="60" r="5" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+ case "moontree":return `<svg width="150" height="130" viewBox="0 0 150 130"><path d="M112 34 a20 20 0 1 1 -14 -24 a16 16 0 1 0 14 24 Z" fill="none" stroke="${c}" stroke-width="2"/><path d="M50 126 V70 M50 84 L28 58 M50 76 L74 50 M50 96 L30 78 M50 90 L70 72" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+ case "jazz":return `<svg width="150" height="110" viewBox="0 0 150 110"><path d="M40 18 h70 L75 62 Z" fill="none" stroke="${c}" stroke-width="2.2"/><line x1="75" y1="62" x2="75" y2="92" stroke="${c}" stroke-width="2.2"/><line x1="55" y1="92" x2="95" y2="92" stroke="${c}" stroke-width="2.2"/><path d="M120 24 a8 8 0 1 1 -8 -8" fill="none" stroke="${c}" stroke-width="1.8"/><line x1="120" y1="24" x2="120" y2="52" stroke="${c}" stroke-width="1.8"/></svg>`;
+ case "porthole":return `<svg width="130" height="120" viewBox="0 0 130 120"><circle cx="65" cy="52" r="36" fill="none" stroke="${c}" stroke-width="2.4"/><circle cx="65" cy="52" r="26" fill="none" stroke="${c}" stroke-width="1.4"/><path d="M40 96 q12 -10 25 0 t25 0 t25 0" fill="none" stroke="${c}" stroke-width="2"/><path d="M48 104 q10 -8 20 0 t20 0" fill="none" stroke="${c}" stroke-width="1.6"/></svg>`;
  default:return `<svg width="110" height="130" viewBox="0 0 110 130">${[46,38,30,22,14].map(r=>`<path d="M55 ${65-r} a${r} ${r*1.25} 0 1 1 -0.01 0" fill="none" stroke="${c}" stroke-width="2" opacity="${0.45+r/90}"/>`).join("")}<circle cx="55" cy="65" r="5" fill="${c}"/></svg>`}}
-function coverVars(c){const p=THEMES[c.themeKey].palette;return `--th-bg:${p.bg};--th-paper:${p.paper};--th-accent:${p.accent};--th-accent2:${p.accent2};--th-ink:${p.ink}`}
+function coverStyleOf(c){return coverStyleCfg(c)}
+function coverVars(c){const st=coverStyleCfg(c);const p=(st&&st.pal)||THEMES[c.themeKey].palette;return `--th-bg:${p.bg};--th-paper:${p.paper};--th-accent:${p.accent};--th-accent2:${p.accent2};--th-ink:${p.ink}`}
 function coverPhotoFrame(c,cap){return `<div class="cov-photo-frame"><span class="tape t1"></span><span class="tape t2"></span><img src="${c.coverPhoto}" alt="Case photo"></div><div class="cov-photo-cap">${cap}</div>`}
-function coverHTML(c,back){const th=THEMES[c.themeKey];const dark=(c.coverStyle==="deco"||c.coverStyle==="gothic"||c.coverStyle==="neon");
+/* ChatGPT master back (chatgpt_style_guide.md): charcoal + parchment panel,
+   "EVERY CLUE TELLS A STORY.", the 5-item What's Inside list, the strip,
+   publisher + reserved barcode zone. Teaser names the victim + counts only —
+   nothing on the back ever reveals the solution. */
+function coverBackCG(c,st,cls){const prepared=(c.preparedFor||"").trim();
+ const teaser=`<p>${esc(c.victim.name)}, ${esc(c.victim.role)}, is found at ${esc(c.crimePlace)}. ${c.suspects.length} suspects. ${c.evidence.length} pieces of evidence. One timeline that must fit them all. Interview the suspects, work the evidence board, and name the killer — if the file lets you.</p>`;
+ const inside=`<h4>WHAT'S INSIDE</h4><ul><li>Complete Printable Case File</li><li>Detailed Suspect Dossiers</li><li>Printable Evidence Cards</li><li>Separate Sealed Solution</li><li>Host Guide</li></ul>`;
+ return `<div class="${cls}" style="${coverVars(c)}">
+  <div class="cov-top"><span>CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.themeLabel.toUpperCase())}</span></div>
+  <div class="cov-back-cg"><h3>Every clue<br>tells a story.</h3>
+  <div class="cov-back-panel">${teaser}${inside}${c.coverPhoto?`<div style="display:flex;justify-content:center;padding-top:6px"><div class="cov-back-photo" style="flex-basis:44%">${coverPhotoFrame(c,"Case Photo")}</div></div>`:""}</div>
+  <div class="cov-strip">Investigate • Connect the Clues • Solve the Case</div>
+  <div class="cov-back-row"><span class="pub">${esc(c.shopName||"SONGLAP DEALS")}${prepared?`<br>Prepared for: ${esc(prepared)}`:""}</span><span class="cov-barcode">BARCODE</span></div>
+  </div>
+  <div class="cov-foot"><span>PRINT · HOST · SOLVE</span><span>${esc(c.dateStr.split(",").pop().trim()||"")}</span></div></div>`}
+/* Gemini master back (gemini_style_guide.md): title restated, teaser ≤3 lines,
+   What's Inside, proof grid, anchor strip, barcode zone, publisher centred. */
+function coverBackGM(c,st,cls){const prepared=(c.preparedFor||"").trim();
+ const teaser=`${esc(c.victim.name)}, ${esc(c.victim.role)}, is found at ${esc(c.crimePlace)}. ${c.suspects.length} suspects. ${c.evidence.length} pieces of evidence. One timeline that must fit them all.`;
+ return `<div class="${cls}" style="${coverVars(c)}">
+  <div class="cov-top"><span>CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.themeLabel.toUpperCase())}</span></div>
+  <div class="cov-back-gm"><h3>${esc(c.title)}</h3>
+  <p class="teaser">${teaser}</p>
+  <h4>WHAT'S INSIDE</h4>
+  <ul><li>Complete printable case file</li><li>${c.suspects.length} suspect dossiers with secrets &amp; alibis</li><li>${c.evidence.length} evidence cards, incl. red herrings</li><li>Witness statements, timeline &amp; 3-level hints</li><li>Host guide, ballots &amp; sealed solution</li></ul>
+  <div class="cov-proof"><div><b>${c.suspects.length}</b><span>Suspects</span></div><div><b>${c.evidence.length}</b><span>Evidence</span></div><div><b>${esc(c.playTime)}</b><span>Play time</span></div></div>
+  ${c.coverPhoto?`<div style="display:flex;justify-content:center"><div class="cov-back-photo" style="flex-basis:44%">${coverPhotoFrame(c,"Case Photo")}</div></div>`:""}
+  <div class="cov-strip">Investigate • Connect the Clues • Solve the Case</div>
+  <div class="cov-back-row"><span class="pub">${esc(c.shopName||"SONGLAP DEALS")}${prepared?`<br>Prepared for: ${esc(prepared)}`:""}</span><span class="cov-barcode">BARCODE</span></div>
+  </div>
+  <div class="cov-foot" style="justify-content:center"><span>SONGLAP DEALS</span></div></div>`}
+function coverHTML(c,back){const th=THEMES[c.themeKey];const st=coverStyleCfg(c);const dark=!!st.dark;
  /* round 4: long titles shrink to fit — at the full 31px a 5–6 line title
     grows the label box down into the CONFIDENTIAL stamp zone and the two
     texts visually merge ("FINALS NIGHT" + "CONFIDENTIAL") */
  const tFit=c.title.length>52?20:c.title.length>38?24:c.title.length>26?27:31;
- if(back){const blurb=`<p style="font-size:12.5px;line-height:1.55">${esc(c.victim.name)}, ${esc(c.victim.role)}, is found at ${esc(c.crimePlace)}. ${c.suspects.length} suspects. ${c.evidence.length} pieces of evidence. One timeline that must fit them all. Interview the suspects, work the evidence board, and name the killer — if the file lets you.</p>
+ const cls=`cover style-${c.coverStyle} layout-${st.layout||"classic"} ${dark?"dark":""}`;
+ if(back){
+  const prepared=(c.preparedFor||"").trim();
+  if(st.src==="cg")return coverBackCG(c,st,cls);
+  if(st.src==="gm")return coverBackGM(c,st,cls);
+  const blurb=`<p style="font-size:12.5px;line-height:1.55">${esc(c.victim.name)}, ${esc(c.victim.role)}, is found at ${esc(c.crimePlace)}. ${c.suspects.length} suspects. ${c.evidence.length} pieces of evidence. One timeline that must fit them all. Interview the suspects, work the evidence board, and name the killer — if the file lets you.</p>
   <h4 style="margin:14px 0 4px;font-family:Oswald;letter-spacing:1.5px;font-size:12px">INSIDE THE FILE</h4>
   <p style="font-size:12px;line-height:1.7">· Complete case summary &amp; police report<br>· ${c.suspects.length} suspect dossiers with secrets &amp; alibis<br>· ${c.evidence.length} evidence cards, incl. red herrings<br>· Witness statements with deliberate contradictions<br>· Timeline, investigation board &amp; 3-level hints<br>· Host guide, accusation ballots &amp; sealed solution</p>`;
- return `<div class="cover style-${c.coverStyle} ${dark?"dark":""}" style="${coverVars(c)}">
+ return `<div class="${cls}" style="${coverVars(c)}">
   <div class="cov-top"><span>CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.themeLabel.toUpperCase())}</span></div>
   <div style="padding:20px 28px 0"><h3 style="font-size:19px;text-transform:uppercase">${esc(c.title)}</h3>
   ${c.coverPhoto?`<div class="cov-back-flex"><div style="flex:1;min-width:0">${blurb}</div><div class="cov-back-photo">${coverPhotoFrame(c,"Case Photo")}</div></div>`:blurb}</div>
-  ${c.coverPhoto?`<div class="cov-motif"></div>`:`<div class="cov-motif">${motifSVG(c.coverStyle)}</div>`}
+  ${c.coverPhoto?`<div class="cov-motif"></div>`:`<div class="cov-motif">${motifSVG(st.motif)}</div>`}
   <div class="cov-badge">${c.suspects.length} Suspects · ${esc(c.players)} · ${esc(c.playTime)} · ${esc(c.diffLabel)}</div>
+  ${prepared?`<div class="cov-prepared">Prepared for: ${esc(prepared)}</div>`:""}
   <div class="cov-foot"><span>${esc(c.shopName||"A SONGLAP DEALS STUDIO PACK")}</span><span>PRINT · HOST · SOLVE</span></div></div>`}
- return `<div class="cover style-${c.coverStyle} ${dark?"dark":""}" style="${coverVars(c)}">
-  <div class="cov-top"><span>CONFIDENTIAL · CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.dateStr.split(",").pop().trim()||"")}</span></div>
-  <div class="cov-label"><div class="over">A Murder Mystery Investigation</div><h2 class="cov-title" style="font-size:${tFit}px">${esc(c.title)}</h2><div class="cov-tag">${c.suspects.length} suspects. One killer. No easy answers.</div></div>
-  <div class="stamp">Confidential</div>
-  ${c.coverPhoto?`<div class="cov-photo">${coverPhotoFrame(c,"Case Photo · Exhibit A")}</div>`:`<div class="cov-motif">${motifSVG(c.coverStyle)}</div>`}
+ const deco=st.layout==="manila"?`<div class="cov-tab">Case File #${esc(c.caseNo)}</div>`
+  :st.layout==="decoframe"?`<div class="cov-frame"></div>`
+  :st.layout==="noir"?`<div class="cov-string"></div>`:"";
+ const tapeTop=st.layout==="tape"?`<div class="cov-tape t1">Crime Scene — Do Not Cross</div>`:"";
+ const tapeBot=st.layout==="tape"?`<div class="cov-tape t2">Crime Scene — Do Not Cross</div>`:"";
+ return `<div class="${cls}" style="${coverVars(c)}">${deco}
+  <div class="cov-top"><span>${esc((st.stamp||"Confidential").toUpperCase())} · CASE NO. ${esc(c.caseNo)}</span><span>${esc(c.dateStr.split(",").pop().trim()||"")}</span></div>
+  <div class="cov-label"><div class="over">${esc(st.over||"A Murder Mystery Investigation")}</div><h2 class="cov-title" style="font-size:${tFit}px">${esc(c.title)}</h2><div class="cov-tag">${c.suspects.length} suspects. One killer. No easy answers.</div></div>${tapeTop}
+  <div class="stamp" style="transform:rotate(${st.rot??-6}deg)">${esc(st.stamp||"Confidential")}</div>
+  ${c.coverPhoto?`<div class="cov-photo">${coverPhotoFrame(c,"Case Photo · Exhibit A")}</div>`:`<div class="cov-motif">${motifSVG(st.motif)}</div>`}
+  ${tapeBot}
   <div class="cov-badge">${c.suspects.length} Suspects · ${esc(c.players)} · ${esc(c.playTime)} · ${esc(c.diffLabel)}</div>
   <div class="cov-foot"><span>PRIVATE INVESTIGATION DOSSIER</span><span>${esc(c.shopName||"SONGLAP DEALS")}</span></div></div>`}
 function propsItems(c){return [
@@ -1106,8 +1309,10 @@ function hostRefSheets(c){const blocks=c.suspects.map((s,i)=>`<div class="dossie
  return pages.map((pg,ix)=>`<div class="host-banner">CONFIDENTIAL — HOST ONLY — DO NOT DISTRIBUTE TO PLAYERS</div><h2 class="pg-title">Host Reference — Secrets &amp; Alibi Checks${pages.length>1?" ("+(ix+1)+" of "+pages.length+")":""}</h2>${pg.join("")}${ix===pages.length-1?wit:""}`)}
 function setCoverPhoto(file){const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const max=1000;let w=img.naturalWidth||1,h=img.naturalHeight||1;const sc=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*sc));h=Math.max(1,Math.round(h*sc));const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);cur.coverPhoto=cv.toDataURL("image/jpeg",0.85);autosave();toast("Cover photo set — see it on both covers below.");render()};img.onerror=()=>toast("That file could not be read as an image.");img.src=rd.result};rd.onerror=()=>toast("That file could not be read.");rd.readAsDataURL(file)}
 function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{date:"",place:"",host:""};
- el.innerHTML=`<h2>Design Studio</h2><p class="sub">Six cover styles over the ${esc(cur.themeLabel)} palette. The cover always carries the case label, the CONFIDENTIAL stamp, and the badge line buyers look for: suspects · players · time · difficulty.</p>
- <label class="f">Cover style</label><div class="btn-row">${COVER_STYLES.map(s=>`<button class="btn ${cur.coverStyle===s.key?"btn-gold":""}" data-cs="${s.key}">${s.label}</button>`).join("")}</div>
+ const fams=[];COVER_STYLES.forEach(s=>{let g=fams.find(x=>x.fam===s.fam);if(!g){g={fam:s.fam,items:[]};fams.push(g)}g.items.push(s)});
+ const styleBtns=fams.map(g=>`<div style="margin:12px 0 2px"><b style="font-size:13px">${esc(g.fam)}</b><div class="btn-row" style="margin-top:6px">${g.items.map(s=>`<button class="btn ${cur.coverStyle===s.key?"btn-gold":""}" data-cs="${s.key}">${esc(s.label)}</button>`).join("")}</div></div>`).join("");
+ el.innerHTML=`<h2>Design Studio</h2><p class="sub">${COVER_STYLES.length} cover styles — every named design from the ChatGPT + Gemini style guides, over the ${esc(cur.themeLabel)} palette. The cover always carries the case label, the CONFIDENTIAL stamp, and the badge line buyers look for: suspects · players · time · difficulty.</p>
+ <label class="f">Cover style</label>${styleBtns}
  <label class="f" style="margin-top:16px">📷 Cover Photo (optional)</label>
  <div class="flex" style="align-items:center;gap:10px;flex-wrap:wrap">
  <button class="btn" id="covPhotoBtn" type="button">${cur.coverPhoto?"Change photo":"Upload a photo"}</button>
@@ -1117,6 +1322,9 @@ function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{da
  <label class="f" style="margin-top:16px">Name on cover</label>
  <input class="inp" id="covName" placeholder="e.g. Mystery Nights Co." value="${esc(cur.shopName)}">
  <p class="mini" style="margin-top:4px">The name printed on the front &amp; back covers — the same white-label shop name as in Book &amp; Export, saved with the case. (The big case title is set in Build Case.)</p>
+ <label class="f" style="margin-top:10px">Prepared for (optional)</label>
+ <input class="inp" id="covPrepared" placeholder="e.g. Grandma Rose" value="${esc(cur.preparedFor||"")}">
+ <p class="mini" style="margin-top:4px">Printed as "Prepared for: &lt;name&gt;" on the back cover. Leave blank to omit it.</p>
  <div class="grid c2" style="align-items:start"><div><label class="f">Front cover</label>${coverHTML(cur,false)}</div>
  <div><label class="f">Back cover</label>${coverHTML(cur,true)}</div></div>
  <h3 style="margin:22px 0 4px">Invitation details (printed on the props page)</h3>
@@ -1128,6 +1336,7 @@ function renderDesign(el){if(!cur)return needCase(el);cur.invite=cur.invite||{da
  _cpf.onchange=()=>{const f=_cpf.files&&_cpf.files[0];if(f)setCoverPhoto(f)};
  const _cpr=$("#covPhotoRemove");if(_cpr)_cpr.onclick=()=>{cur.coverPhoto="";autosave();toast("Cover photo removed.");render()};
  $("#covName").onchange=e=>{cur.shopName=e.target.value;autosave();render()};
+ $("#covPrepared").onchange=e=>{cur.preparedFor=e.target.value;autosave();render()};
  $("#invDate").onchange=e=>{cur.invite.date=e.target.value;autosave()};
  $("#invPlace").onchange=e=>{cur.invite.place=e.target.value;autosave()};
  $("#invHost").onchange=e=>{cur.invite.host=e.target.value;autosave()}}
@@ -1493,9 +1702,23 @@ function runTests(){const lines=[];let fails=0;const T=(name,cond,extra)=>{lines
  T("complete pack starts with a cover",complete.indexOf("cover-sheet")>-1&&complete.indexOf("cover-sheet")<complete.indexOf("Host Quick-Start"));
  T("complete pack ends with licence",complete.lastIndexOf("Commercial Licence")>complete.lastIndexOf("Answer Key"));
  const kit=etsyKit(demo);T("etsy kit: title ≤140, 13 tags ≤20 chars",kit.title.length<=140&&kit.tags.length===13&&kit.tags.every(t=>t.length<=20),kit.title.length+" chars");
- T("cover renders in all 6 styles",COVER_STYLES.every(s=>{demo.coverStyle=s.key;return coverHTML(demo,false).includes("cov-title")}));
+ T("cover renders in all 36 styles",COVER_STYLES.every(s=>{demo.coverStyle=s.key;return coverHTML(demo,false).includes("cov-title")}));
  demo.coverPhoto="data:image/gif;base64,R0lGODlhAQABAAAAACw=";const cpF=coverHTML(demo,false),cpB=coverHTML(demo,true);demo.coverPhoto="";
  T("cover photo appears on front + back covers when set (and not when unset)",cpF.includes("cov-photo")&&cpB.includes("cov-back-photo")&&!coverHTML(demo,false).includes("cov-photo")&&!coverHTML(demo,true).includes("cov-photo"));
+ /* E14 — all-styles cover build (2026-11-27, per নিপু's "build the covers in
+    ALL styles"): every named design from the ChatGPT (18) + Gemini (12)
+    guides exists once, renders front+back without overflow, keeps its
+    stamp/tag/barcode rules, and never leaks the solution onto the back. */
+ {const styleKeys=new Set(COVER_STYLES.map(s=>s.key)),styleLabels=new Set(COVER_STYLES.map(s=>s.label));
+  T("E14 36 cover styles, all unique keys + labels, each with motif + palette + layout",COVER_STYLES.length===36&&styleKeys.size===36&&styleLabels.size===36&&COVER_STYLES.every(s=>s.motif&&((s.pal&&s.pal.bg&&s.pal.accent)||s.src==="legacy")&&["classic","noir","cozy","file","vic","decoframe","manila","tape","redacted","ink"].includes(s.layout)));
+  const ovf=document.createElement("div");ovf.style.cssText="position:absolute;left:-9999px;top:0;width:430px;visibility:hidden";const ovfBad=[];
+  COVER_STYLES.forEach(s=>{ovf.innerHTML=coverHTML({...demo,coverStyle:s.key},false)+coverHTML({...demo,coverStyle:s.key},true);document.body.appendChild(ovf);ovf.querySelectorAll(".cover").forEach(cv=>{if(cv.scrollWidth>cv.clientWidth+4||cv.scrollHeight>cv.clientHeight+4)ovfBad.push(s.key+" "+cv.scrollWidth+"x"+cv.scrollHeight+" vs "+cv.clientWidth+"x"+cv.clientHeight)});ovf.remove()});
+  T("E14 every cover style renders front+back without overflow",ovfBad.length===0,ovfBad[0]||"");
+  T("E14 every front cover carries its own stamp text",COVER_STYLES.every(s=>{const st=coverStyleCfg({...demo,coverStyle:s.key});return coverHTML({...demo,coverStyle:s.key},false).includes(esc(st.stamp||"Confidential"))}));
+  T("E14 every new-style back has a barcode zone + What's Inside",COVER_STYLES.filter(s=>s.src==="cg"||s.src==="gm").every(s=>{const b=coverHTML({...demo,coverStyle:s.key},true);return b.includes("cov-barcode")&&b.includes("WHAT'S INSIDE")}));
+  T("E14 back covers never leak the killer name or the method",COVER_STYLES.every(s=>{const b=coverHTML({...demo,coverStyle:s.key},true);return !b.includes(esc(demo.suspects[demo.killerIndex].name))&&!b.includes(esc(demo.method))}));
+  T("E14 preparedFor prints on every back when set, omitted when blank",COVER_STYLES.every(s=>coverHTML({...demo,coverStyle:s.key,preparedFor:"Grandma Rose"},true).includes("Prepared for: Grandma Rose")&&!coverHTML({...demo,coverStyle:s.key,preparedFor:""},true).includes("Prepared for:")));
+  T("E14 cover photo renders front+back on every style",COVER_STYLES.every(s=>{const ph={...demo,coverStyle:s.key,coverPhoto:"data:image/gif;base64,R0lGODlhAQABAAAAACw="};return coverHTML(ph,false).includes("cov-photo-frame")&&coverHTML(ph,true).includes("cov-photo-frame")}))}
  /* regression tests for the audit round-3 fix (E11): the printed Logic
     Validator Report paginates — every check reaches the book, each sheet
     stays within the calibrated page budget, big cases split over 2+ sheets */
